@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="wizlyk">
 <meta property="og:description" content="Knapsack Problem 就是大名鼎鼎的“背包问题”，其中又以“01背包”为大家所熟知。 先来看一段来自维基百科的介绍：  背包问题（Knapsack problem）是一种组合优化的NP完全问题。问题可以描述为：给定一组物品，每种物品都有自己的重量和价格，在限定的总重量内，我们如何选择，才能使得物品的总价格最高。问题的名称来源于如何选择最合适的物品放置于给定背包中。 相似问题经常出现在商">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-09T07:38:23.661Z">
+<meta property="og:updated_time" content="2019-08-09T08:23:51.504Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Knapsack Problem">
 <meta name="twitter:description" content="Knapsack Problem 就是大名鼎鼎的“背包问题”，其中又以“01背包”为大家所熟知。 先来看一段来自维基百科的介绍：  背包问题（Knapsack problem）是一种组合优化的NP完全问题。问题可以描述为：给定一组物品，每种物品都有自己的重量和价格，在限定的总重量内，我们如何选择，才能使得物品的总价格最高。问题的名称来源于如何选择最合适的物品放置于给定背包中。 相似问题经常出现在商">
@@ -251,7 +251,7 @@
                 
               
 
-              <time title="创建时间：2019-08-09 13:24:02 / 修改时间：15:38:23" itemprop="dateCreated datePublished" datetime="2019-08-09T13:24:02+08:00">2019-08-09</time>
+              <time title="创建时间：2019-08-09 13:24:02 / 修改时间：16:23:51" itemprop="dateCreated datePublished" datetime="2019-08-09T13:24:02+08:00">2019-08-09</time>
             </span>
           
             
@@ -299,7 +299,7 @@
 
 <p>由于每个面值的货币都可以使用无数次（即<strong>无界背包问题</strong>），所以对于每一个面值的货币，我们都可以从最小的钱数开始，每次判断这个数减去面值后所需要的货币数，同时更新该钱数需要的最少货币数。</p>
 <p>即转移公式为： </p>
-<p>$$dp[k] = min(dp[k], dp[k-cach[i]]+ 1)$$</p>
+<p>$$dp[k] = min(dp[k], dp[k-cash[i]]+ 1)$$</p>
 <p>如若输入为<code>cash = {2,5}, aim = 6</code>:<br>最开始时，面值为2的货币，钱为2需要1张，3不行，4需要2张，5不行，6需要3张<br>然后面值为5的货币，则钱为5需要1张，6需要2张，这个时候就更新6元的货币数，从3改为2。</p>
 <p>代码：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">minCash</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;cash, <span class="keyword">int</span> aim)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; dp(aim + <span class="number">1</span>, <span class="number">-1</span>);  <span class="comment">// 用于记录最小钱数的数组，是动态规划的基础结构</span></span><br><span class="line">  dp[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> n = cash.size();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123; <span class="comment">// 对于第i种货币</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> sum = cash[i]; sum &lt;= aim; ++sum) &#123;</span><br><span class="line">      <span class="keyword">int</span> last = sum - cash[i];</span><br><span class="line">      <span class="keyword">if</span> (dp[last] == <span class="number">0</span>) &#123;  <span class="comment">// last == 0 的情况</span></span><br><span class="line">        dp[sum] = <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (dp[last] == <span class="number">-1</span>)  <span class="comment">// 不能从前一个数中到达sum</span></span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 判断是否需要更新</span></span><br><span class="line">        dp[sum] = (dp[sum] == <span class="number">-1</span> ? dp[last] + <span class="number">1</span> : min(dp[sum], dp[last] + <span class="number">1</span>));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dp[aim];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -439,10 +439,18 @@
       </div>
     
   </nav>
-  <div class="cc-license motion-element" itemprop="license">
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/lyk-ohlyk" title="GitHub &rarr; https://github.com/lyk-ohlyk" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
     
-  
-    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-cn" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
   </div>
 
 
