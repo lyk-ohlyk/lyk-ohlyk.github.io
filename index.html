@@ -255,114 +255,21 @@
 
       
           
-            <h1 id="约瑟夫问题"><a href="#约瑟夫问题" class="headerlink" title="约瑟夫问题"></a>约瑟夫问题</h1><p><code>维基百科</code></p>
-<h2 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h2><p><strong>约瑟夫问题</strong>（有时也称为<strong>约瑟夫斯置换</strong>），是一个出现在<a href="https://zh.wikipedia.org/wiki/计算机科学" target="_blank" rel="noopener">计算机科学</a>和<a href="https://zh.wikipedia.org/wiki/数学" target="_blank" rel="noopener">数学</a>中的问题。在计算机<a href="https://zh.wikipedia.org/wiki/编程" target="_blank" rel="noopener">编程</a>的算法中，类似问题又称为<strong>约瑟夫环</strong>。</p>
-<p>人们站在一个等待被处决的圈子里。 计数从圆圈中的指定点开始，并沿指定方向围绕圆圈进行。 在跳过指定数量的人之后，执行下一个人。 对剩下的人重复该过程，从下一个人开始，朝同一方向跳过相同数量的人，直到只剩下一个人，并被释放。</p>
-<p>问题即，给定人数、起点、方向和要跳过的数字，选择初始圆圈中的位置以避免被处决。</p>
-<h2 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h2><p>这个问题是以<a href="https://zh.wikipedia.org/wiki/弗拉維奧·約瑟夫斯" target="_blank" rel="noopener">弗拉维奥·约瑟夫</a>命名的，他是1世纪的一名犹太历史学家。他在自己的日记中写道，他和他的40个战友被罗马军队包围在洞中。他们讨论是自杀还是被俘，最终决定自杀，并以抽签的方式决定谁杀掉谁。约瑟夫斯和另外一个人是最后两个留下的人。约瑟夫斯说服了那个人，他们将向罗马军队投降，不再自杀。约瑟夫斯把他的存活归因于运气或天意，他不知道是哪一个。</p>
-<hr>
-<p><code>wizlyk</code></p>
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>这个问题的背景还是挺沉重的，但我们现在关心的是怎么解决这个问题。</p>
-<p>约瑟夫环问题可以有很多种问法，比如找到一定次数后不会被出列的位置、给出出列的顺序、判断最后剩下的人的位置等等，接下来我们将对这些问题给出一个统一的解决方案。</p>
-<p>问题：假设队列中一共有n个人，每次找到第m个人出列，然后从第m+1个人开始数，再找第m个人出列，直到队列里空无一人。求每次出列的人在原队列中的位置。</p>
-<p>首先，直接从模拟操作入手，可以用链表或数组，每次移动一定的位置并做好标记（链表可以删除节点，数组可以做标记），然后每次输出找到的位置就行。对于链表，移动的总步数在 O(n*m)的量级，对于数组，移动的总步数在O(n^2)的量级。</p>
-<p>上面的做法，判断最后一个剩下的人的位置需要O(n*m)的时间。但由于问题的规则已经非常清楚了，每一步操作后，下一步的状态已经确定，那么有没有O(n)的办法直接得到最后一个人的位置呢？</p>
-<p>答案当然是有的。</p>
-<p>要做到O(n)，首先要考虑每一步和其上一步的关系，只有能在O(1)的时间内得到转移的方式，才能实现O(n)的总体时间复杂度。</p>
-<p>假设在倒数第i步，未出列的共i个人，第一个报数的人编号记为0（记为1也行，但在稍后的求余操作中会多出减1和加1的操作，不够简洁）。考虑在第m个人出列后，倒数第(i-1)步的编号变化。见下表。</p>
-<table>
-<thead>
-<tr>
-<th align="center">倒数第i步的编号</th>
-<th align="center">倒数第(i-1)步的编号</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">0</td>
-<td align="center">i - m</td>
-</tr>
-<tr>
-<td align="center">1</td>
-<td align="center">i - m + 1</td>
-</tr>
-<tr>
-<td align="center">2</td>
-<td align="center">i - m +２</td>
-</tr>
-<tr>
-<td align="center">…</td>
-<td align="center">…</td>
-</tr>
-<tr>
-<td align="center">m - 2</td>
-<td align="center">i - 2</td>
-</tr>
-<tr>
-<td align="center">m - 1 (出列位置)</td>
-<td align="center">- (无)</td>
-</tr>
-<tr>
-<td align="center">m</td>
-<td align="center">0</td>
-</tr>
-<tr>
-<td align="center">…</td>
-<td align="center">…</td>
-</tr>
-<tr>
-<td align="center">i - 1</td>
-<td align="center">i - m - 1</td>
-</tr>
-</tbody></table>
-<p>若记倒数第i步的第k个位置标号为 $f(i, k)$,则有</p>
-<p>$$f(i,k) = \big(f(i-1,k)+m\big) \mod i$$</p>
-<p>这个公式告诉我们，当我们知道后面出列的人在其队列中的编号，我们可以推出他在<strong>出列前的编号</strong>。比如我们知道最后一个人出列时他的编号只能为0（因为队伍只有一个人），那么就可以一直推出最后出列的人在初始队列中的编号。</p>
-<p>举个例子，n=4，m=3，求最后一次出列的人在队列中的编号。</p>
-<table>
-<thead>
-<tr>
-<th>倒数第i次（剩下i个人）</th>
-<th>编号</th>
-<th>计算公式</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>0</td>
-<td>-</td>
-</tr>
-<tr>
-<td>2</td>
-<td>1</td>
-<td>(0 + 3) % 2</td>
-</tr>
-<tr>
-<td>3</td>
-<td>1</td>
-<td>(1 + 3) % 3</td>
-</tr>
-<tr>
-<td>4</td>
-<td>0</td>
-<td>(1 + 3) % 4</td>
-</tr>
-</tbody></table>
-<p>则可知最后一次出列的人编号为0。</p>
-<p>那么如果我们想知道第k个出列的人是谁怎么办呢？可以知道，第k个出列的人出列前，队伍里剩下(n-k+1)个人，而他现在在队伍里的编号是 $(m-1) \mod (n-k+1)$。因此，我们可以用递归来求：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 求第k次出列的人的编号</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">JosephusProblem</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m, <span class="keyword">int</span> k)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (k == <span class="number">1</span>) <span class="keyword">return</span> (m - <span class="number">1</span>) % n;</span><br><span class="line">  <span class="keyword">return</span> (JosephusProblem(n - <span class="number">1</span>, m, k - <span class="number">1</span>) + m) % n ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>用上递归后，程序非常的简洁。由于是尾递归，可以很容易地写成迭代的方式：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= k; ++i) &#123;</span><br><span class="line">  <span class="keyword">if</span> (i == <span class="number">1</span>) </span><br><span class="line">    ans = (m - <span class="number">1</span>) % (n - k + <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    ans = (s + m) % (n - k + i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>要求最后一个出列的人，只需要调用<code>JosephusProblem(n, m, n)</code> 就可以了。</p>
-<p>有意思的是，虽然可以在O(k)的时间内找到第k个出列的人，但要用这种方法打印出整个出列序列，还是需要$1+2 + … +n = O(n^2)$ 的时间复杂度。</p>
-<p>留下的问题：</p>
-<ul>
-<li>能在 O(n) 的时间复杂度下打印出整个出列序列么？</li>
-<li>或是说，是否存在 O(1) 的时间复杂度的算法，即一个数学公式，来求出第 k 个出列的人的编号？</li>
-</ul>
-
+            <p>
+              约瑟夫问题维基百科
+描述约瑟夫问题（有时也称为约瑟夫斯置换），是一个出现在计算机科学和数学中的问题。在计算机编程的算法中，类似问题又称为约瑟夫环。
+人们站在一个等待被处决的圈子里。 计数从圆圈中的指定点开始，并沿指定方向围绕圆圈进行。 在跳过指定数量的人之后，执行下一个人。 对剩下的人重复该过程，从
+              ...
+            </p>
+          <!--noindex-->
           
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/08/10/Josephus-Permutation/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
         
       
     </div>
@@ -440,76 +347,22 @@
 
       
           
-            <p>Knapsack Problem 就是大名鼎鼎的“背包问题”，其中又以“01背包”为大家所熟知。</p>
-<p>先来看一段来自维基百科的介绍：</p>
-<hr>
-<p><strong>背包问题</strong>（Knapsack problem）是一种<a href="https://zh.wikipedia.org/wiki/组合优化" target="_blank" rel="noopener">组合优化</a>的<a href="https://zh.wikipedia.org/wiki/NP完全" target="_blank" rel="noopener">NP完全</a>问题。问题可以描述为：给定一组物品，每种物品都有自己的重量和价格，在限定的总重量内，我们如何选择，才能使得物品的总价格最高。问题的名称来源于如何选择最合适的物品放置于给定背包中。</p>
-<p>相似问题经常出现在商业、<a href="https://zh.wikipedia.org/wiki/组合数学" target="_blank" rel="noopener">组合数学</a>，<a href="https://zh.wikipedia.org/wiki/计算复杂性理论" target="_blank" rel="noopener">计算复杂性理论</a>、<a href="https://zh.wikipedia.org/wiki/密码学" target="_blank" rel="noopener">密码学</a>和<a href="https://zh.wikipedia.org/wiki/应用数学" target="_blank" rel="noopener">应用数学</a>等领域中。</p>
-<p>也可以将背包问题描述为<a href="https://zh.wikipedia.org/wiki/決定性問題" target="_blank" rel="noopener">决定性问题</a>，即在总重量不超过<em>W</em>的前提下，总价值是否能达到<em>V</em>。</p>
-<p><strong>定义</strong></p>
-<p>我们有 <em>n</em> 种物品，物品 <em>j</em> 的重量为$w_j$，价格为$p_j$。<br>我们假定所有物品的重量和价格都是非负的。背包所能承受的最大重量为<em>W</em>。<br>如果限定每种物品只能选择0个或1个，则问题称为<strong>0-1背包问题</strong>。</p>
-<p>可以用公式表示为：<br>$$max: \sum_{j = 1}^{n} p_ix_i$$<br>$$ s.t.: \sum_{j=1}^n w_ix_i \leqslant W, x_j \in {0,1}$$</p>
-<p>如果限定物品 j 最多只能选择 $b_j$个，则问题称为<strong>有界背包问题</strong></p>
-<p>可以用公式表示为：<br>$$max: \sum_{j = 1}^{n} p_ix_i$$<br>$$ s.t.: \sum_{j=1}^n w_ix_i \leqslant W, x_j \in {0,1,…,b_j}$$</p>
-<p>如果不限定每种物品的数量，则问题称为<strong>无界背包问题</strong>。</p>
-<p>各类复杂的背包问题总可以变化为简单的0-1背包问题进行求解。</p>
-<p><strong>计算复杂度</strong></p>
-<p>在计算机科学领域，人们对背包问题感兴趣的原因在于：</p>
-<ul>
-<li>利用<a href="https://zh.wikipedia.org/wiki/动态规划" target="_blank" rel="noopener">动态规划</a>，背包问题存在一个<a href="https://zh.wikipedia.org/wiki/伪多项式时间" target="_blank" rel="noopener">伪多项式时间</a>算法</li>
-<li>把上面算法作为子程序，背包问题存在完全逼近多项式时间方案</li>
-<li>作为<a href="https://zh.wikipedia.org/wiki/NP完全" target="_blank" rel="noopener">NP完全</a>问题，背包问题没有一种既准确又快速（多项式时间）的算法</li>
-</ul>
-<hr>
-<p>背包问题在我们的生活中是那么的常见（在面试题中也一样），直白的问题和经典的动态规划解法，使得背包问题显得那么重要而基础。</p>
-<p>先来看来自于左程云的《程序员代码面试指南》中的例子</p>
-<p><strong>1. 换钱的最少货币数 I</strong></p>
-<p>给定货币面值，存放于 <code>cash</code> 数组中。求对于指定的钱数 <code>aim</code>， 最少需要几张货币。若不能换，则返回-1。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">cash = &#123;2,3,5&#125;, aim = 20</span><br><span class="line">Output:</span><br><span class="line">20</span><br><span class="line"></span><br><span class="line">Input:</span><br><span class="line">cash = &#123;2,3,5&#125;, aim = 0</span><br><span class="line">Output:</span><br><span class="line">0</span><br><span class="line"></span><br><span class="line">Input:</span><br><span class="line">cash = &#123;2&#125;, aim = 1</span><br><span class="line">Output:</span><br><span class="line">-1</span><br></pre></td></tr></table></figure>
+            <p>
+              Knapsack Problem 就是大名鼎鼎的“背包问题”，其中又以“01背包”为大家所熟知。
+先来看一段来自维基百科的介绍：
 
-<p>由于每个面值的货币都可以使用无数次（即<strong>无界背包问题</strong>），所以对于每一个面值的货币，我们都可以从最小的钱数开始，每次判断这个数减去面值后所需要的货币数，同时更新该钱数需要的最少货币数。</p>
-<p>即转移公式为： </p>
-<p>$$dp[k] = min(dp[k], dp[k-cash[i]]+ 1)$$</p>
-<p>如若输入为<code>cash = {2,5}, aim = 6</code>:<br>最开始时，面值为2的货币，钱为2需要1张，3不行，4需要2张，5不行，6需要3张<br>然后面值为5的货币，则钱为5需要1张，6需要2张，这个时候就更新6元的货币数，从3改为2。</p>
-<p>代码：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">minCash</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;cash, <span class="keyword">int</span> aim)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; dp(aim + <span class="number">1</span>, <span class="number">-1</span>);  <span class="comment">// 用于记录最小钱数的数组，是动态规划的基础结构</span></span><br><span class="line">  dp[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> n = cash.size();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123; <span class="comment">// 对于第i种货币</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> sum = cash[i]; sum &lt;= aim; ++sum) &#123;</span><br><span class="line">      <span class="keyword">int</span> last = sum - cash[i];</span><br><span class="line">      <span class="keyword">if</span> (dp[last] == <span class="number">0</span>) &#123;  <span class="comment">// last == 0 的情况</span></span><br><span class="line">        dp[sum] = <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (dp[last] == <span class="number">-1</span>)  <span class="comment">// 不能从前一个数中到达sum</span></span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 判断是否需要更新</span></span><br><span class="line">        dp[sum] = (dp[sum] == <span class="number">-1</span> ? dp[last] + <span class="number">1</span> : min(dp[sum], dp[last] + <span class="number">1</span>));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dp[aim];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上面的例题是货币可以无限取，当只能有限取（即<strong>有界背包问题</strong>）时，又改怎么变化呢？</p>
-<p>再来个例子：</p>
-<p><strong>2.  换钱的最少货币数 II</strong></p>
-<p>给定你现在有的钱数，存放于 <code>cash</code> 数组中。求对于指定的钱数 <code>aim</code>， 最少需要几张货币。若不能换（或钱不够），则返回 -1。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">cash = &#123;2,3,5&#125;, aim = 20</span><br><span class="line">Output:</span><br><span class="line">-1</span><br><span class="line"></span><br><span class="line">Input:</span><br><span class="line">cash = &#123;5,2,3,5&#125;, aim = 10</span><br><span class="line">Output:</span><br><span class="line">2</span><br><span class="line"></span><br><span class="line">Input:</span><br><span class="line">cash = &#123;2&#125;, aim = 0</span><br><span class="line">Output:</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
-
-<p>其实解答的思路和上个例子一模一样，也是用一个数组来存放已经计算好的最少需要的货币数。唯一的不同在于，我们的钱只能用一次，很现实。</p>
-<p>注意在上一个例子中，我们重复使用钱的关键在于这一句:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> sum = cash[i]; sum &lt;= aim; ++sum)</span><br></pre></td></tr></table></figure>
-
-<p>即我们是从小加到大，从而保证了使用某货币<code>c</code>时，大的钱数<code>sum</code>可以由小的钱数<code>sum-c</code>那跳转，而<code>sum-c</code>我们已经计算过了，所以大的钱数<code>sum</code>可以重复使用该货币。</p>
-<p>那么如果要让钱不能重复使用，我们就从大往小算就行了，这样，每次计算，前面的最小货币数必定是没有使用当前货币的情况。</p>
-<p>代码：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">minCash</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;cash, <span class="keyword">int</span> aim)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; dp(aim + <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">  dp[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> n = cash.size();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> sum = aim; sum &gt;= cash[i]; --sum)&#123;  <span class="comment">// 从大到小算</span></span><br><span class="line">      <span class="keyword">int</span> last = sum - cash[i];</span><br><span class="line">      <span class="keyword">if</span> (dp[last] == <span class="number">0</span>) &#123;</span><br><span class="line">        dp[sum] = <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (dp[last] == <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">        dp[sum] = (dp[sum] == <span class="number">-1</span> ? dp[last] + <span class="number">1</span> : min(dp[sum], dp[last] + <span class="number">1</span>));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dp[aim];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>看，其实差距只有一行。</p>
-<p><strong>3. 换钱的方法数</strong></p>
-<p>假定你现在有面值不同的货币，存放在 <code>cash</code> 数组中，每种货币可以用无数次。求对于一个给定的钱数 <code>aim</code> ，有多少中换钱的方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">cash = &#123;1,10,25,5&#125;, aim = 15</span><br><span class="line">Output:</span><br><span class="line">6</span><br><span class="line"></span><br><span class="line">Input:</span><br><span class="line">cash = &#123;5,2,3,5&#125;, aim = 1</span><br><span class="line">Output:</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
-
-<p>题目和第一个例子很相似，不同之处在于求解的目标不一样，所以我们动态规划使用的 <code>dp</code> 数组的含义也不一样。</p>
-<p>对于例子“换钱的最少货币数 I”， <code>dp</code> 数组的含义是当前状态下，每个数需要的最少货币数；<br>对于例子“换钱的方法数”， <code>dp</code> 数组的含义是当前状态下，每个数对应的换钱方法数。</p>
-<p>转移公式：</p>
-<p>$$dp[k] = dp[k]+dp[k-cach[i]]$$</p>
-<p>代码：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">countChanges</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;cash, <span class="keyword">int</span> aim)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; dp(aim + <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">  dp[<span class="number">0</span>] = <span class="number">-1</span>;  <span class="comment">// 0 之所以特殊，是因为任何面值都可以从0开始计算</span></span><br><span class="line">  <span class="keyword">int</span> n = cash.size();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> sum = cash[i]; sum &lt;= aim; ++sum) &#123;</span><br><span class="line">      <span class="keyword">int</span> last = sum - cash[i];</span><br><span class="line">      <span class="keyword">if</span> (dp[last] == <span class="number">-1</span>)  <span class="comment">// 即 ++dp[cash[i]] </span></span><br><span class="line">        dp[sum]++;  </span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (dp[last] == <span class="number">0</span>)  <span class="comment">// 换不了，那可咋办嘛？答，continue</span></span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">else</span> </span><br><span class="line">        dp[sum] += dp[last];  <span class="comment">// 加上前面那个数能换的方法数</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dp[aim];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以看到这里的转移公式和经典的<a href="https://leetcode.com/problems/climbing-stairs/" target="_blank" rel="noopener">爬梯子问题</a>很像。</p>
-<p>讲的很浅，以后有机会再补充例子。</p>
-<p>最后再用一道实际的腾讯笔试题来结尾吧。</p>
-<p><strong>数字拼凑</strong><br>小Q有一个长度为n的序列S，序列中有n个正整数。小Q现在和你玩数字游戏，每次小Q说出一个正整数X，你需要从序列中挑选出若干个数字出来进行相加，使结果等于X，如果你不能完成拼凑你就输了。</p>
-<p>小Q现在想知道能让你输掉游戏的最小的正整数X是多少？</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">输入描述：</span><br><span class="line">输入包括两行</span><br><span class="line">第一行为一个正整数n，表示序列的长度 1 &lt;= n &lt;= 20</span><br><span class="line">第二行包括n个正整数a[i]，用空格隔开， 1 &lt;= a[i] &lt; 10^5</span><br><span class="line"></span><br><span class="line">输出描述：</span><br><span class="line">一个正整数，表示最小的正整数X</span><br><span class="line"></span><br><span class="line">示例1：</span><br><span class="line">输入：</span><br><span class="line">3</span><br><span class="line">2 1 4</span><br><span class="line">输出：</span><br><span class="line">8</span><br></pre></td></tr></table></figure>
-
-
+背包问题（Knapsack problem）是一种组合优化的NP完全问题。问题可以描述为：给定一组物品，每种物品都有自己的重量和价格，在限定的总重量内，我们如何选择，才
+              ...
+            </p>
+          <!--noindex-->
           
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/08/09/Knapsack-Problem/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
         
       
     </div>
@@ -595,10 +448,21 @@
 
       
           
-            <h2 id="Jacobian"><a href="#Jacobian" class="headerlink" title="Jacobian"></a>Jacobian</h2><p>发现一个以前没注意的问题，Jacobian行列式之所以要求取绝对值，是因为不同的坐标顺序会导致不同的行列式值（如下图），而我们通常希望得到一个正的数，所以要取绝对值。</p>
-<p><img src="/2019/02/20/OH-MY-DEAR/Jacobian.jpg" alt="不同的坐标顺序去表换到相同的坐标系 https://math.stackexchange.com/questions/1144214/on-the-jacobian-determinant-for-conversion-to-cylindrical-coordinates"></p>
+            <p>
+              Jacobian发现一个以前没注意的问题，Jacobian行列式之所以要求取绝对值，是因为不同的坐标顺序会导致不同的行列式值（如下图），而我们通常希望得到一个正的数，所以要取绝对值。
 
+
+              
+            </p>
+          <!--noindex-->
           
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/02/20/OH-MY-DEAR/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
         
       
     </div>
