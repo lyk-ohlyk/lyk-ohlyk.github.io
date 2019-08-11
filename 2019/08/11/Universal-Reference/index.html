@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers 有时间我再做一个翻译和理解。">
+  <meta name="description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers 什么是 Universal Reference? Universal reference 是 Scott Meyers 创建的名词，用于描述这么一个概念：用一个右值引用作为一个 cv-unqualified 模板参数，该参数可被推断为一个值或一个左值引用。 在当时 C">
 <meta name="keywords" content="C++">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Universal Reference in C++11">
 <meta property="og:url" content="http://yoursite.com/2019/08/11/Universal-Reference/index.html">
 <meta property="og:site_name" content="wizlyk">
-<meta property="og:description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers 有时间我再做一个翻译和理解。">
+<meta property="og:description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers 什么是 Universal Reference? Universal reference 是 Scott Meyers 创建的名词，用于描述这么一个概念：用一个右值引用作为一个 cv-unqualified 模板参数，该参数可被推断为一个值或一个左值引用。 在当时 C">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-11T02:25:19.886Z">
+<meta property="og:updated_time" content="2019-08-11T06:37:19.041Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Universal Reference in C++11">
-<meta name="twitter:description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers 有时间我再做一个翻译和理解。">
+<meta name="twitter:description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers 什么是 Universal Reference? Universal reference 是 Scott Meyers 创建的名词，用于描述这么一个概念：用一个右值引用作为一个 cv-unqualified 模板参数，该参数可被推断为一个值或一个左值引用。 在当时 C">
   <link rel="canonical" href="http://yoursite.com/2019/08/11/Universal-Reference/">
 
 
@@ -240,7 +240,7 @@
                 
               
 
-              <time title="创建时间：2019-08-11 10:15:21 / 修改时间：10:25:19" itemprop="dateCreated datePublished" datetime="2019-08-11T10:15:21+08:00">2019-08-11</time>
+              <time title="创建时间：2019-08-11 10:15:21 / 修改时间：14:37:19" itemprop="dateCreated datePublished" datetime="2019-08-11T10:15:21+08:00">2019-08-11</time>
             </span>
           
             
@@ -260,8 +260,39 @@
 
       
         <p><strong><em>T&amp;&amp; Doesn’t Always Mean “Rvalue Reference”</em>  -Scott Meyers</strong></p>
-<p><a href="https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers" target="_blank" rel="noopener">https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers</a></p>
-<p>有时间我再做一个翻译和理解。</p>
+<p><strong>什么是 Universal Reference?</strong></p>
+<p><a href="https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers" target="_blank" rel="noopener">Universal reference</a> 是 Scott Meyers 创建的名词，用于描述这么一个概念：用一个右值引用作为一个 <code>cv-unqualified</code> 模板参数，该参数可被推断为一个值或一个左值引用。</p>
+<p>在当时 C++ 标准并没有一个名词来描述。后来在 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4164.pdf" target="_blank" rel="noopener">N4164 </a> 中加上了 <code>forwarding reference</code> 这个定义：</p>
+<blockquote>
+<p>A forwarding reference is an rvalue reference to a cv-unqualified template parameter. If P is a forwarding reference and the argument is an lvalue, the type “lvalue reference to A” is used in place of A for type deduction.</p>
+</blockquote>
+<hr>
+<p> 什么是<code>cv-unqualified template parameter</code>呢？</p>
+<p> <code>cv-qualifiers</code> 即 <code>const</code> 和 <code>volatile</code>。在 C++ 中，有基础类型和符合类型。基础类型包括了算术类型，<code>void</code> 和 <code>std::nullptr_t</code>。复合类型有数组、函数、指针、引用、类、<code>unions</code>，枚举类和指向非静态成员的指针。<br> 一个 <code>cv-unqulified</code> 类型可以是上面的任意类型。</p>
+<p> 同时，有三种 <code>cv-qualified</code> 类型：</p>
+<ul>
+<li><p><em>const-qualified</em> - with the <code>const</code> cv-qualifier</p>
+</li>
+<li><p><em>volatile-qualified</em> - with the <code>volatile</code> cv-qualifier</p>
+</li>
+<li><p><em>const-volatile-qualified</em> - with both the <code>const</code> and <code>volatile</code> cv-qualifiers</p>
+</li>
+</ul>
+<p>需要注意的一点是，对数组类型使用的 <code>cv-qualifiers</code> 实际上是对它的元素使用的。</p>
+<hr>
+<p>forwarding reference 的概念简单来说，就是指类型  <code>T</code> 在下面的代码中是怎么被推断的:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt; <span class="title">void</span> <span class="title">foo</span>(<span class="title">T</span>&amp;&amp; );</span></span><br></pre></td></tr></table></figure>
+
+<p>这个 <code>T&amp;&amp;</code> 即可能被推断为左值，也可能被推断为右值。</p>
+<p>还记的我们在<a href="http://localhost:4000/2019/08/11/EMC-notes-1/" target="_blank" rel="noopener">《Effective Modern C++》阅读笔记（一）</a> 中提到的引用折叠么？</p>
+<blockquote>
+<p>引用折叠:</p>
+<ul>
+<li>X&amp; &amp;、X&amp; &amp;&amp;和X&amp;&amp; &amp;都折叠成类型X&amp;</li>
+<li>类型X&amp;&amp; &amp;&amp;折叠成X&amp;&amp;</li>
+<li>当传入的是左值时，类型推断会推向左值引用；若传入的是右值才推为右值引用。</li>
+</ul>
+</blockquote>
 
     </div>
 

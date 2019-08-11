@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="wizlyk">
 <meta property="og:description" content="本文所有内容参考于 《Effective Modern C++》（Scott Meyers）一书，仅供个人学习 Deducing Types (类型推断)Item 1:理解模板类型推断模板函数声明中的类型 123456template&amp;lt;typename T&amp;gt;void f(ParamType param);int x = 27; // x is an intconst int cx =">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-11T02:24:22.221Z">
+<meta property="og:updated_time" content="2019-08-11T06:38:31.637Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Deducing Types - 《Effective Modern C++》阅读笔记（一）">
 <meta name="twitter:description" content="本文所有内容参考于 《Effective Modern C++》（Scott Meyers）一书，仅供个人学习 Deducing Types (类型推断)Item 1:理解模板类型推断模板函数声明中的类型 123456template&amp;lt;typename T&amp;gt;void f(ParamType param);int x = 27; // x is an intconst int cx =">
@@ -240,7 +240,7 @@
                 
               
 
-              <time title="创建时间：2019-08-11 09:31:07 / 修改时间：10:24:22" itemprop="dateCreated datePublished" datetime="2019-08-11T09:31:07+08:00">2019-08-11</time>
+              <time title="创建时间：2019-08-11 09:31:07 / 修改时间：14:38:31" itemprop="dateCreated datePublished" datetime="2019-08-11T09:31:07+08:00">2019-08-11</time>
             </span>
           
             
@@ -301,7 +301,14 @@
 <li>When deducing types for by-value parameters, const and/or volatile arguments are treated as non-const and non-volatile.</li>
 <li>During template type deduction, arguments that are array or function names decay to pointers, unless they’re used to initialize references.</li>
 </ul>
-<p><strong>存在的疑问：</strong><br>1，什么是Universal reference?<br>2，什么样的参数为volatile？</p>
+<p><strong>存在的疑问：</strong><br>1，什么是Universal reference?</p>
+<p>见 <a href="https://wizlyk.com/2019/08/11/Universal-Reference/" target="_blank" rel="noopener">Universal Reference in C++11</a>。</p>
+<p>2，什么样的参数应该设为volatile？</p>
+<p><code>volatile</code> 用于避免编译器做一些可能影响运行结果的优化。</p>
+<blockquote>
+<p>Quoting from the C++ Standard ($7.1.5.1/8)<br>[..] volatile is a hint to the implementation to <strong>avoid aggressive optimization involving the object</strong> because the value of the object might be changed by means undetectable by an implementation.[…]</p>
+<p>(<a href="https://stackoverflow.com/questions/4437527/why-do-we-use-volatile-keyword" target="_blank" rel="noopener">https://stackoverflow.com/questions/4437527/why-do-we-use-volatile-keyword</a>)</p>
+</blockquote>
 <h2 id="Item-2-auto语句中的类型推断"><a href="#Item-2-auto语句中的类型推断" class="headerlink" title="Item 2:auto语句中的类型推断"></a>Item 2:auto语句中的类型推断</h2><p>如何推断下面的代码中 auto 分别代表了什么类型呢？</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> x = <span class="number">27</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">auto</span> cx = x;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">auto</span>&amp; rx = x;</span><br></pre></td></tr></table></figure>
 
