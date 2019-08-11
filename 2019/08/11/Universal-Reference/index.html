@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="wizlyk">
 <meta property="og:description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers 什么是 Universal Reference? Universal reference 是 Scott Meyers 创建的名词，用于描述这么一个概念：用一个右值引用作为一个 cv-unqualified 模板参数，该参数可被推断为一个值或一个左值引用。 在当时 C">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-11T06:37:19.041Z">
+<meta property="og:updated_time" content="2019-08-11T06:49:20.116Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Universal Reference in C++11">
 <meta name="twitter:description" content="T&amp;amp;&amp;amp; Doesn’t Always Mean “Rvalue Reference”  -Scott Meyers 什么是 Universal Reference? Universal reference 是 Scott Meyers 创建的名词，用于描述这么一个概念：用一个右值引用作为一个 cv-unqualified 模板参数，该参数可被推断为一个值或一个左值引用。 在当时 C">
@@ -240,7 +240,7 @@
                 
               
 
-              <time title="创建时间：2019-08-11 10:15:21 / 修改时间：14:37:19" itemprop="dateCreated datePublished" datetime="2019-08-11T10:15:21+08:00">2019-08-11</time>
+              <time title="创建时间：2019-08-11 10:15:21 / 修改时间：14:49:20" itemprop="dateCreated datePublished" datetime="2019-08-11T10:15:21+08:00">2019-08-11</time>
             </span>
           
             
@@ -284,7 +284,7 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt; <span class="title">void</span> <span class="title">foo</span>(<span class="title">T</span>&amp;&amp; );</span></span><br></pre></td></tr></table></figure>
 
 <p>这个 <code>T&amp;&amp;</code> 即可能被推断为左值，也可能被推断为右值。</p>
-<p>还记的我们在<a href="http://localhost:4000/2019/08/11/EMC-notes-1/" target="_blank" rel="noopener">《Effective Modern C++》阅读笔记（一）</a> 中提到的引用折叠么？</p>
+<p>还记的我们在<a href="https://wizlyk.com/2019/08/11/EMC-notes-1/" target="_blank" rel="noopener">《Effective Modern C++》阅读笔记（一）</a> 中提到的引用折叠么？</p>
 <blockquote>
 <p>引用折叠:</p>
 <ul>
