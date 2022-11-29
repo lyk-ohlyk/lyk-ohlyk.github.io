@@ -171,7 +171,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-11-29 21:43:27 / 修改时间：22:12:55" itemprop="dateCreated datePublished" datetime="2022-11-29T21:43:27+08:00">2022-11-29</time>
+              <time title="创建时间：2022-11-29 21:43:27 / 修改时间：22:42:49" itemprop="dateCreated datePublished" datetime="2022-11-29T21:43:27+08:00">2022-11-29</time>
             </span>
 
           
@@ -349,8 +349,8 @@
 
 <center>图15、PCSS算法(图源：Percentage-closer soft shadows)</center>
 
-<p>图15中，光源和地板被认为是平行的，<img src="https://latex.codecogs.com/svg.latex?\Large&space; w_ "> 即为半影区的长度，<img src="https://latex.codecogs.com/svg.latex?\Large&space; w_ "> 是光源的长度。可见，光源长度和半影区的长度分别在两个相似三角形上，因此可以得到半影区的长度的计算公式：</p>
-<img src="https://latex.codecogs.com/svg.latex?\Large&space; w_ = \frac{(d_{Receiver} - d_{Blocker}) \cdot w_{Light}}{d_{Blocker}} ">
+<p>图15中，光源和地板被认为是平行的，<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;w_{Penumbra}"> 即为半影区的长度，<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; w_{Light} "> 是光源的长度。可见，光源长度和半影区的长度分别在两个相似三角形上，因此可以得到半影区的长度的计算公式：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;w_{Penumbra}=\frac{(d_{Receiver} - d_{Blocker}) \cdot w_{Light}}d_{Blocker}">
 
 <p>图16为游戏《消逝的光芒》（<em>Dying Light</em>）中开启了PCSS的截图，可以从电线杆的影子中清晰的看到软阴影的变化。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/dying-light-pcss-001-on.png" width="800">
