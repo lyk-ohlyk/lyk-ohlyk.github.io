@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="月移疏影上东墙——简述阴影映射算法 Above all shadows rides the Sun and Stars for ever dwell: I will not say the Day is done, nor bid the Stars farewell   ― J·R·R·托尔金，《魔戒：王者归来》  正如被晨曦拉长的幢幢高楼，正如夏日微风中的斑驳树影，是阴影让光变得更加跳脱、丰富">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ShadowAlgorithms">
+<meta property="og:url" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/index.html">
+<meta property="og:site_name" content="wizlyk">
+<meta property="og:description" content="月移疏影上东墙——简述阴影映射算法 Above all shadows rides the Sun and Stars for ever dwell: I will not say the Day is done, nor bid the Stars farewell   ― J·R·R·托尔金，《魔戒：王者归来》  正如被晨曦拉长的幢幢高楼，正如夏日微风中的斑驳树影，是阴影让光变得更加跳脱、丰富">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/EyeShadow.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/DepthSquirrel.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping/7fin.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping/3noshadow.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping/1light.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping/2shadowmap.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping/5failed.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/ninja.jpg">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/AliasingError.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{d}p}{\mathrm{d}s}=n\frac{\mathrm{d}z}{z\mathrm{d}s}\frac{\mathrm{cos}\phi}{\mathrm{cos}\theta}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{d}z}{z\mathrm{d}s}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{cos}\phi}{\mathrm{cos}\theta}">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/PSM.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/CSM.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/shadow_acne.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/shadow_mapping_self_occlusion.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/shadow_mapping_bias.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/rtr4-detached-shadow.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/peter-pan.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\Omega">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20a%20\in%20\Omega">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\int_{\Omega}%20f(x)g(x)\,\mathrm{d}x%20=%20f(a)\int_{\Omega}g(x)%20\,\mathrm{d}x">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\frac{\int_{\Omega}f(x)\mathrm{d}x}{\int_{\Omega}\mathrm{d}x}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\int_{\Omega}%20f(x)g(x)\,\mathrm{d}x\approx\frac{\int_{\Omega}f(x)\mathrm{d}x}{\int_{\Omega}\mathrm{d}x}\cdot\int_{\Omega}g(x)%20\,\mathrm{d}x">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/RenderEquation.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/RenderEquationApproximation.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20V(p,%20\omega_i)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20L_i(p,%20\omega_i)%20f_r(p,%20\omega_i,%20\omega_o)%20\cos(\theta_i)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\omega_i">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20L_i(p,%20\omega_i)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20f_r(p,%20\omega_i,%20\omega_o)">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Penumbra2.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Games202_Mary_HardShadow.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Games202_Mary_PCF.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20V(x)%20=%20\sum_{q\in%20N(p)}w(p,q)%20\cdot%20\chi^{+}[D_{SM}(q)-D_{scene}(x)]">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20D_{SM}(q)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20D_{scene}(x)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\chi^{+}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\chi^{+}(x)=\begin{cases}1,%20x%3E0\\%200,%20x\leq%200\end{cases}">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/Sphere_with_soft_shadow.jpg">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/PCSS.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20w_">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20w_">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20w_%20=%20\frac{(d_{Receiver}%20-%20d_{Blocker})%20\cdot%20w_{Light}}{d_{Blocker}}">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/dying-light-pcss-001-on.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20P(x\geq%20t)%20\leq%20\frac{\sigma^2}{\sigma^2%20+%20(t%20-%20\mu)^2},%20\quad\text{for%20}t%20%3E%20\mu">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\sigma">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\mu">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20P(x\geq%20t)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20t%20\leq%20\mu">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;\sigma^2%20=%20E(x^2)%20-%20E(x)^2">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;E(x^2)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;E(x)">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/VSM.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/vsm_light_bleeding.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;E(x)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;\sigma^2">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/MSM_vsm.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/MSM_msm.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/ConvSM.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/ESM.png">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/number_area.png">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;N_1">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;N_2">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;\frac{N_1}{N}%20z_{occ}%20+%20\frac{N_2}{N}z_{unocc}%20=%20z_{avg}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{avg}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{avg}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\frac{N_2}{N}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20P(x\geq%20t)">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\frac{N_2}{N}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%20\frac{N_1}{N}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;%201%20-%20\frac{N_2}{N}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}=t">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">
+<meta property="og:image" content="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}=t">
+<meta property="og:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/VSSM.jpg">
+<meta property="article:published_time" content="2022-11-29T13:43:27.000Z">
+<meta property="article:modified_time" content="2022-11-29T14:12:55.869Z">
+<meta property="article:author" content="wizlyk">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2022/11/29/ShadowAlgorithms/EyeShadow.png">
+
+<link rel="canonical" href="http://yoursite.com/2022/11/29/ShadowAlgorithms/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ShadowAlgorithms | wizlyk</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wizlyk</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wizlyk的代码小天地</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2022/11/29/ShadowAlgorithms/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wizlyk">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wizlyk">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ShadowAlgorithms
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-11-29 21:43:27 / 修改时间：22:12:55" itemprop="dateCreated datePublished" datetime="2022-11-29T21:43:27+08:00">2022-11-29</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="月移疏影上东墙——简述阴影映射算法"><a href="#月移疏影上东墙——简述阴影映射算法" class="headerlink" title="月移疏影上东墙——简述阴影映射算法"></a>月移疏影上东墙——简述阴影映射算法</h1><blockquote>
+<p>Above all shadows rides the Sun</p>
+<p>and Stars for ever dwell:</p>
+<p>I will not say the Day is done,</p>
+<p>nor bid the Stars farewell  </p>
+<p>― <strong>J·R·R·托尔金，《魔戒：王者归来》</strong></p>
+</blockquote>
+<p>正如被晨曦拉长的幢幢高楼，正如夏日微风中的斑驳树影，是阴影让光变得更加跳脱、丰富。本文简述了在虚拟场景中模拟出真实世界的阴影效果的实时渲染方法——阴影映射（Shadow mapping）的基本原理和其相关算法，同时介绍了阴影映射算法存在的问题以及软阴影现象，希望能帮助大家对阴影映射有一个大概的认识。</p>
+<h2 id="如何模拟真实世界中的阴影？"><a href="#如何模拟真实世界中的阴影？" class="headerlink" title="如何模拟真实世界中的阴影？"></a>如何模拟真实世界中的阴影？</h2><p>在我们的宏观世界中，光沿着直线传播，并且会被物体吸收，同时形成反射和折射。对于阴影来说，我们只需要模拟光被物体吸收（挡住）就可以了。这要怎么做呢？</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/EyeShadow.png" width="400">
+
+<center>图1、阴影产生示意图</center>
+
+<p>如图1所示，当眼睛看到的地方和光源之间有阻挡的时候，这个地方就处于阴影之中。我们在把一个场景画到屏幕的时候，就是把场景的一个个位置投射到屏幕的像素上；那么，对于画在屏幕上的每个像素对应的位置，都判断一下这个位置和光源之间有没有阻挡，不就可以知道这个位置是不是在阴影中了么？</p>
+<p>是的，没错！你甚至可以只用<a target="_blank" rel="noopener" href="https://www.shadertoy.com/view/cdfSWf">二三十行shadertoy代码</a>就实现这样的效果。但是这样做有一个问题，场景中的物体往往很复杂，判断有没有阻挡需要计算射线与场景中物体的相交，这是一个很费时的操作；一般来说，而如果在游戏中每个像素都这样做，那计算量就有些太大了，前一天的阴影还没画完，后一天太阳都出来了。有没有办法，不算射线与物体的相交，也能知道一个位置是否处于阴影之中呢？</p>
+<h2 id="阴影映射（Shadow-Mapping-）的由来"><a href="#阴影映射（Shadow-Mapping-）的由来" class="headerlink" title="阴影映射（Shadow Mapping ）的由来"></a>阴影映射（Shadow Mapping ）的由来</h2><h3 id="什么是阴影映射？"><a href="#什么是阴影映射？" class="headerlink" title="什么是阴影映射？"></a>什么是阴影映射？</h3><p>在计算阴影时，我们是真的想知道光被什么东西挡住了么？不，我们只关心光是否被挡住。那么，其实我们只需要知道被计算的位置和光源之间有没有东西就可以了！</p>
+<p>在将场景绘制到屏幕时，人们往往会记录一个像素对应的位置距离摄像机的距离（即深度），并把这些深度保存在一张和屏幕一样大的图片上以方便一些其他的计算，这样的记录深度的图被称作深度图（Depth map）。深度图的每个像素，记录了向这个像素的方向看过去的最近的距离。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/DepthSquirrel.png" width="400">
+
+<center>图2、一个松鼠模型的深度图，颜色越白表示离相机越近
+    (图源：A Gauss-Newton Approach to Real-Time Monocular Multiple Object Tracking)</center>
+
+<p>回到我们刚才计算阴影的问题，假如我们知道了对于光源来说各个方向的最近的距离，那么对于场景中的每个位置，我们都看它离光源的距离比这个最近距离大还是小，不就可以知道该位置是不是在阴影中了么——若离光源的距离大于对应方向的最近距离，则说明前面有东西遮挡；若离光源的距离等于对应方向的最近距离，说明该位置被光源照亮了，即没有阴影。</p>
+<p>所以我们只需要在光源处，对场景计算一张深度图，对于场景中的每个位置，都把他投射到这张深度图上，将该位置的深度与深度图上对应像素的深度进行对比，就能知道这个位置是否处于阴影中。这种使用光源的深度图来计算阴影的方法，就叫做阴影映射，也就是Shadow mapping【1】，而这张深度图，则被称作阴影贴图（Shadow map）。</p>
+<p>来看一个来自于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%98%B4%E5%BD%B1%E8%B4%B4%E5%9B%BE">维基百科的阴影映射</a>的例子。图3(a)是一个有阴影的帕特农神庙模型，光源为在左侧向右照射的平行光。</p>
+<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\7fin.png" width="224">
+<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\3noshadow.png" width="224">
+<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\1light.png" width="224">
+<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\2shadowmap.png" width="224">
+
+
+<center>(a)一个有阴影的“帕特农神庙”   (b)无阴影  (c) 光源视角 (d) 阴影贴图</center>
+<center>图3、一个有阴影的“帕特农神庙”的计算过程</center>
+
+<p>在使用阴影映射前，场景是没有阴影的，如图3(b)所示。要从图3(b)中得到图3(a)的结果，我们需要从光源处计算一张深度贴图。图3(c)即为从光源视角看向场景的样子。计算出来的阴影贴图为图3(d)，图3(d)和上面的图2的深度图一样，都是颜色越白，表示离观察点（图2为摄像机、图3(d)为光源）越近。有了深度贴图，那么就可以进行深度测试，判断图3(b)中的哪些像素是处于阴影中了，深度测试的结果见图4。有了图4，就能把渲染的结果，从图3(b)变为图3(a)了！</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\5failed.png" width="300">
+
+<center>图4、在阴影贴图上深度测试失败的像素（图中白色部分），即处于阴影中的像素</center>
+
+<p>总的来说，阴影映射是一个有两个渲染 pass 的算法：在第一个 pass，先在光源处，将场景物体离光源的深度写进阴影贴图；在第二个 pass，进行深度判断，将整个含阴影的场景渲染出来。</p>
+<h3 id="阴影映射的问题"><a href="#阴影映射的问题" class="headerlink" title="阴影映射的问题"></a>阴影映射的问题</h3><p>不过现在，阴影映射还有一些很明显的问题没有解决：</p>
+<h4 id="一、走样（锯齿）问题"><a href="#一、走样（锯齿）问题" class="headerlink" title="一、走样（锯齿）问题"></a>一、走样（锯齿）问题</h4><p>这是所有在屏幕空间使用离散缓存的算法都存在的问题：不论我们的阴影贴图有多大，它的分辨率总是有限的；而有限的分辨率，必定会在某些场合不够适用；对于阴影贴图来说，其表现就是出现阴影锯齿（Aliasing），或是走样的现象。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/ninja.jpg" width="500">
+
+<p>​图5、有锯齿的阴影（图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing">GPUGems - Chapter-11</a>）</p>
+<p>这种出现锯齿的表现误差，又被人们划分成了由透视产生的锯齿(Perspective aliasing)和由投影产生的锯齿(Projection aliasing)【2】。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/AliasingError.png" width="500">
+
+<p>​                        图6、阴影贴图锯齿的产生原因示意图（图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus">GPUGems3 - Chapter 10</a>）</p>
+<p>图6解释了锯齿产生的原因：图6表示了一束平行光从上往下照射，相机位于左侧的场景，我们考虑图像中勇士的手臂的阴影；<em><strong>n</strong></em>表示相机的近平面的距离（假设屏幕绘制在近平面），<em><strong>f</strong></em>表示相机的远平面的距离，<em><strong>s</strong></em>为归一化后的阴影平面，<em><strong>z</strong></em>表示勇士手臂离相机的距离，<em><strong>ds</strong></em>是勇士手臂投影到在阴影平面上的长度，<em><strong>dp</strong></em>是勇士手臂投影到屏幕上的长度。此时，阴影贴图的走样误差（aliasing error）可以被表示为</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{d}p}{\mathrm{d}s}=n\frac{\mathrm{d}z}{z\mathrm{d}s}\frac{\mathrm{cos}\phi}{\mathrm{cos}\theta}" title="Aliasing error">
+
+<p>其中，</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{d}z}{z\mathrm{d}s}">
+
+<p>是由透视产生的走样项，而</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{cos}\phi}{\mathrm{cos}\theta}" title="Aliasing error">
+
+<p>是由投影产生的走样项。</p>
+<p>可见，由投影产生的锯齿是由光源位置、相机位置以及物体的几何（法线方向）决定的，而由透视产生的锯齿是由于透视的缩短现象造成的，所以人们研究 Shadow mapping 的锯齿问题（或分辨率问题），都是在尝试解决由<strong>透视</strong>产生的问题。比如：</p>
+<ul>
+<li><strong>透视阴影贴图（perspective shadow maps ，PSM）</strong>【2】：在透视变换后的空间生成阴影贴图，大大减少了由透视产生的锯齿，并且更加充分的利用了贴图分辨率。</li>
+</ul>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/PSM.png" width="700">
+
+<center>图7、左图为世界空间、右图为透视变换后的空间（图源：Perspective shadow maps）</center>
+
+<ul>
+<li><p>使用多分辨率贴图的方法，如<strong>自适应阴影贴图（Adaptive Shadow Maps ，ASM）</strong>【3】。自适应阴影贴图通过量化阴影贴图的像素对最终绘制的图片的贡献，自适应地为需要高分辨率的地方计算高分辨率贴图，从而得到一个高质量的结果。这种方法更适用于离线渲染，而对于实时渲染来说效率有所不足。</p>
+</li>
+<li><p>使用多张阴影贴图，来达到不同位置有不同分辨率的效果，这往往是大场景的动态阴影的解决方案。<strong>平行分割阴影贴图(Parallel-Split Shadow Maps，PSSM)<strong>【4】，又被称为</strong>级联阴影贴图(Cascaded Shadow Maps，CSM)<strong>是业界常用的方法。算法基于一个事实——物体离相机越远，绘制没有锯齿的物体阴影所需要的阴影贴图分辨率就越小。</strong>平行分割阴影贴图算法</strong>（PSSM）将相机视锥按不同的深度划分成几个部分，并以此去划分光源视锥；同时为了更大效率地利用贴图分辨率，PSSM还计算了场景的中物体的包围盒（Axis-aligned bounding box）来帮助光源视锥的划分（更一般的做法是直接求相机视锥划分后的包围盒）。光源视锥划分好后，再对每个划分的部分分别计算深度贴图，最后进行场景的渲染。由于不同的阴影层级之间使用了不同的阴影贴图，所以在不同层级的边界往往会出现阴影精度不连续的现象；从图8可以看出，不同的层级之间的阴影贴图是有重叠区域的，通过对层级边界的阴影在不同阴影贴图上插值，可以减弱阴影精度不连续的现象。</p>
+</li>
+</ul>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/CSM.png" width="600">
+
+<center>图8、级联阴影贴图示意图，图中相机视锥被划分为4个部分，红框为每个部分的光源视锥的包围盒</center>
+
+<h4 id="二、自遮挡及阴影脱离问题"><a href="#二、自遮挡及阴影脱离问题" class="headerlink" title="二、自遮挡及阴影脱离问题"></a>二、自遮挡及阴影脱离问题</h4><p>除了锯齿现象，阴影映射算法（Shadow mapping）还有自遮挡（self occlusion）引发的阴影失真（Shadow acne）的问题。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/shadow_acne.png" width="450">
+
+<center>图9：阴影失真问题（水壶：我挡我自己）（图源：http://ohyecloudy.com/pnotes/archives/377/）</center>
+
+<p>如图9所示，虽然图片中的水壶的阴影被画了出来，但整个场景却被一道道奇怪的黑色条纹笼罩，仿佛有一层纱把灯挡住一样。这是为什么呢？</p>
+<p>这也是因为我们的分辨率有限产生的。由于我们是用的阴影贴图来描述整个场景，每一个阴影贴图的像素对应了一块区域，而这块区域的深度被假设成一致的。图10描述了为什么这样会出现自遮挡的问题：图10中假设光源从左上照射向右下，照到了长条形的地板上；每个黄色的箭头，都对应一个阴影贴图的像素；图中蓝色的阶梯状边界，就是阴影贴图所表现的场景的深度。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/shadow_mapping_self_occlusion.png">
+
+<center>图10、阴影失真原理示意图</center>
+
+<p>我们的地面是连续的，而阴影贴图的像素是离散的，贴图的深度只能看作是对连续的地面深度的近似。所以，可以看到在一个阴影贴图像素所表示的地面上，会同时存在阴影中和非阴影中两个状态；整个地面上，阴影区域和非阴影区域交替出现，形成自遮挡的现象。要怎么避免自遮挡现象呢？</p>
+<p>当然了，如果光源方向完全垂直于地面的话，这个阶梯就和地面重合了，这种自遮挡现象自然就没有了；而对于不是垂直的情况，可以通过增加一个偏移来避免自遮挡——就是把这个蓝色的阶梯向光照方向移动一段距离，阴影的部分自然就少了，从而避免了自遮挡现象（图11）。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/shadow_mapping_bias.png">
+
+<center>图11、增加偏移量以避免自遮挡现象</center>
+
+<p>但是，把阶梯移动后，又有了新的问题：强行加上偏移，必然会使一些原本正确的阴影变的看不见了，这就是阴影脱离（Detached shadow）现象，人们又调皮的给了它一个另外的名字——彼得潘现象（Peter Panning）。</p>
+<p><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/rtr4-detached-shadow.png" width="400"><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/peter-pan.png" width="600"></p>
+<p>(a)增加阴影偏移后，脚的阴影消失（图源：<a target="_blank" rel="noopener" href="https://www.realtimerendering.com/figures/RTR4.07.12.Peters_demo.png">Real-Time Rendering</a>）         (b)小飞侠彼得潘正尝试抓住自己的影子（图源：Walt Disney Productions）</p>
+<center>图12、阴影脱离（Detached shadow）现象</center>
+
+<p>现在并没有一个好的解决阴影脱离现象的方法，只能尽量减少阴影偏移量，来避免阴影脱离现象过于明显。</p>
+<h3 id="从渲染方程的角度看-Shadow-mapping"><a href="#从渲染方程的角度看-Shadow-mapping" class="headerlink" title="从渲染方程的角度看 Shadow mapping"></a>从渲染方程的角度看 Shadow mapping</h3><p>从我们上面的讨论可以发现，Shadow mapping 是将阴影的计算从渲染中分离了出来，算法先是计算了一个像素是否在阴影中（即对于光源的可见性），然后再将阴影的结果给到渲染的过程，从而得到最终的图像。那么，这样做是合理的么？是否存在一些情况，不能这样做呢？</p>
+<p>在回答这些问题前，我们先来看一个积分的近似。</p>
+<h4 id="一个数学近似"><a href="#一个数学近似" class="headerlink" title="一个数学近似"></a>一个数学近似</h4><p>对于连续的函数 <em>f</em> 和 <em>g</em>，在积分区间 <img src="https://latex.codecogs.com/svg.latex?\Large&space; \Omega" title="Aliasing error">上，由定积分的均值定理，存在 <img src="https://latex.codecogs.com/svg.latex?\Large&space; a \in \Omega "> 满足下面这个等式：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space; \int_{\Omega} f(x)g(x)\,\mathrm{d}x = f(a)\int_{\Omega}g(x) \,\mathrm{d}x ">
+
+<p>如果我们用 <img src="https://latex.codecogs.com/svg.latex?\Large&space; \frac{\int_{\Omega}f(x)\mathrm{d}x}{\int_{\Omega}\mathrm{d}x}"> 来近似 <em>f(a)</em> 的话，就得到了下面这个约等式：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space; \int_{\Omega} f(x)g(x)\,\mathrm{d}x\approx\frac{\int_{\Omega}f(x)\mathrm{d}x}{\int_{\Omega}\mathrm{d}x}\cdot\int_{\Omega}g(x) \,\mathrm{d}x ">
+
+<p>这个约等式在满足下面的任一条件的情况下会比较准确：</p>
+<ul>
+<li><em>f(x)</em> 的支撑集（Support）比较小，可理解为 <em>f(x)</em> 的积分域比较小。</li>
+<li><em>g(x)</em> 在积分区间内比较光滑（Smooth），即其值变化不大。</li>
+</ul>
+<h4 id="近似的渲染方程"><a href="#近似的渲染方程" class="headerlink" title="近似的渲染方程"></a>近似的渲染方程</h4><p>渲染方程可以被写为：</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/RenderEquation.png">
+
+<p>其中，橙色框里面为方程中的可见项（Visibility）。将上面的约等式套用至渲染方程，可以得到：</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/RenderEquationApproximation.png">
+
+<p>这个约等式把可见项从积分中单独拿了出来，可以先计算可见项，再计算光照相关的部分——这不就是我们的 Shadow mapping 的思路么？可见，这个近似正是 Shadow mapping 背后的原理。于是，可以知道 Shadow mapping 更适用于以下的情况：</p>
+<ul>
+<li><img src="https://latex.codecogs.com/svg.latex?\Large&space; V(p, \omega_i)">的支撑集比较小的时候——即积分的范围比较小的时候。那么积分范围最小是什么时候呢？是积分范围为一个狄拉克<em>δ</em>函数的时候。这时，对应的是点光源，或方向光源（Directional Light）。</li>
+<li><img src="https://latex.codecogs.com/svg.latex?\Large&space; L_i(p, \omega_i) f_r(p, \omega_i, \omega_o) \cos(\theta_i)"> 比较光滑的时候。这一项和 <img src="https://latex.codecogs.com/svg.latex?\Large&space; \omega_i"> 相关的有光源 <img src="https://latex.codecogs.com/svg.latex?\Large&space; L_i(p, \omega_i) "> 和材质的BRDF项 <img src="https://latex.codecogs.com/svg.latex?\Large&space; f_r(p, \omega_i, \omega_o)"> 。光滑的光照对应着光源范围内趋于固定的辐射值（Constant radiance area lighting），如一般的面光源；而光滑的BRDF对应着物体的材质趋于散射（Diffuse）材质。</li>
+</ul>
+<h2 id="软阴影算法"><a href="#软阴影算法" class="headerlink" title="软阴影算法"></a>软阴影算法</h2><h3 id="什么是软阴影？"><a href="#什么是软阴影？" class="headerlink" title="什么是软阴影？"></a>什么是软阴影？</h3><p>观察上面的一些带阴影的例子，大家会发现这些阴影的边界非常清晰，阴影区域和非阴影区域有着很明显的分界线。这似乎和我们平时在生活中看到的阴影不太一样，为什么生活中的阴影往往有着模糊的边界呢？</p>
+<p>这是因为，上面的例子中，我们使用的光源都是方向光源，它只能产生边界清晰的阴影。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/Penumbra2.png" width="600">
+
+<center>图12、本影和半影</center>
+
+<p>图12解释了对于更一般的面光源，阴影边界是过渡的，而不是突变的原因：在图12中，左侧光源是一个面光源，光被遮挡物（一个球）遮挡，而将阴影投射到墙壁上；可以发现，存在一些阴影区域，是完全不能接受到光的，这个区域被称作本影区（Umbra）；同时，也存在一些区域，只能接受到部分光源，这些区域被称作半影区（Penumbra）。在半影区，离本影区越近，接受到的光照就越少——这就是阴影逐渐从暗变为亮的原因。这种由于半影区域的存在而造成的存在过渡的阴影，被称为软阴影（Soft Shadows）。</p>
+<h3 id="阴影抗锯齿算法——Percentage-Closer-Filtering"><a href="#阴影抗锯齿算法——Percentage-Closer-Filtering" class="headerlink" title="阴影抗锯齿算法——Percentage Closer Filtering"></a>阴影抗锯齿算法——Percentage Closer Filtering</h3><p>为了在虚拟场景中也能绘制出软阴影，我们需要一些工具。Percentage closer filtering 是人们为了一定程度上解决阴影锯齿的问题而提出的算法——原本我们判断一个位置是否在阴影中，是将这个位置投影到阴影贴图上，根据阴影贴图上像素的深度来进行判断。这个过程一共只做了一次判断，判断的结果是<strong>非零即一</strong>的。为了让锯齿没那么明显，人们不仅仅使用这个位置对应的一个阴影贴图像素，而是看这个像素周围的一圈像素（比如说原像素周围的7x7范围），对这一圈像素都进行深度比较，将<strong>所有比较的结果</strong>进行平均，再作为这个位置的阴影比较结果。这样一来，像素的阴影计算就不再是非零即一的，而变成了在零到一这个区间中的一个值（比如用2x2的像素范围，就能得到 [0, 0.25, 0.50, 0.75, 1.0] 这5种值，分别对应[0个、1个、2个、3个、4个]像素不在阴影中），使得原来的锯齿边缘变得模糊；使用的范围（Filter size）越大，边缘就越模糊，模糊的范围也越大。</p>
+<img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Games202_Mary_HardShadow.png" width="400">
+<img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Games202_Mary_PCF.png" width="400">
+
+<p>(a)平行光计算出来的人物阴影，在地面上存在明显的锯齿                  (b) 使用了PCF后得到的人物阴影</p>
+<p>​                                     图源：<a target="_blank" rel="noopener" href="https://sites.cs.ucsb.edu/~lingqi/teaching/games202.html">Games202</a>：Assignment 1</p>
+<center>图13、PCF的抗锯齿效果</center>
+
+<p>假设我们渲染的像素是 <em>x</em>，<em>x</em> 对应到阴影贴图的位置是 <em>p</em>，<em>x</em> 对应的可见性为 *V(x)*，则PCF算法的核心思想可以用下面这个公式表示：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space; V(x) = \sum_{q\in N(p)}w(p,q) \cdot \chi^{+}[D_{SM}(q)-D_{scene}(x)]">
+
+<p>其中，<em>w(p, q)</em> 是加权函数，<em>N(p)</em> 表示点 <em>p</em> 的邻域（即模糊使用的范围）；<img src="https://latex.codecogs.com/svg.latex?\Large&space; D_{SM}(q)"> 表示 <em>q</em> 点对应的阴影贴图上的深度，<img src="https://latex.codecogs.com/svg.latex?\Large&space; D_{scene}(x)"> 表示 <em>x</em> 对应位置到光源的深度，而<img src="https://latex.codecogs.com/svg.latex?\Large&space; \chi^{+}"> 是下面的这样一个简单函数：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space; \chi^{+}(x)=\begin{cases}1, x>0\\ 0, x\leq 0\end{cases}">
+
+<p>题外话：或许有人会奇怪 Percentage Closer Filtering 这个命名是怎么来的——该算法来自于一篇87年的论文【5】, Percentage Closer 指的是在一个场景位置对应的一圈阴影贴图的像素上，像素的深度值比该场景位置的深度值距离光源更近（Closer）的像素数量的百分比（Percentage）；而 Filtering，是指多次比较求平均（或加权平均）的这个操作是一个滤波。</p>
+<h3 id="软阴影算法——Percentage-Closer-Soft-Shadows（PCSS）"><a href="#软阴影算法——Percentage-Closer-Soft-Shadows（PCSS）" class="headerlink" title="软阴影算法——Percentage Closer Soft Shadows（PCSS）"></a>软阴影算法——Percentage Closer Soft Shadows（PCSS）</h3><p>从图13(b)可以看到，虽然PCF是用于抗锯齿的，但阴影的边缘看上去已经是软阴影的样子了（有一个阴影过渡带）。但是，整个阴影的边缘的模糊程度是一致（Uniform）的，这和我们在实际生活中看到的不符（图14）。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/Sphere_with_soft_shadow.jpg" width="400">
+
+<center>图14，面光源下，球的正确的软阴影</center>
+
+<p>从图12可以看出，如果我们将物体向墙壁移动，半影区的范围将缩小；正如图14所表现的一样：离球越近，阴影的过渡带越短。</p>
+<p>这给了我们模拟真实的软阴影一个启发：既然PCF能让阴影变软，不同的滤波范围能产生不同的模糊效果；那么根据阴影离遮挡物（Blocker）的距离从近到远，我们使用对应的滤波范围也从小到大，不就能得到类似图14的效果了么？这正是软阴影算法 Percentage closer soft shadows 【6】的核心思路。</p>
+<p>有了这个思路，只需要找到一个估计滤波范围（Filter size）的方法就好了。下面是 PCSS 的做法：</p>
+<ul>
+<li>遮挡物搜索（Blocker search）：在阴影贴图的一个范围内找到比要渲染的位置（Receiver）的深度更近的深度，即遮挡物（Blocker）的深度，进行平均。搜索的范围取决于光源的大小和该位置到光源的距离。</li>
+<li>半影区估计（Penumbra estimation）：利用刚才得到的遮挡物深度，估计半影区域的长度。</li>
+<li>滤波：利用估计的半影区范围，来选择合适的滤波范围执行PCF算法。</li>
+</ul>
+<p>具体的估计方法见图15：</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/PCSS.png" width="300">
+
+<center>图15、PCSS算法(图源：Percentage-closer soft shadows)</center>
+
+<p>图15中，光源和地板被认为是平行的，<img src="https://latex.codecogs.com/svg.latex?\Large&space; w_ "> 即为半影区的长度，<img src="https://latex.codecogs.com/svg.latex?\Large&space; w_ "> 是光源的长度。可见，光源长度和半影区的长度分别在两个相似三角形上，因此可以得到半影区的长度的计算公式：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space; w_ = \frac{(d_{Receiver} - d_{Blocker}) \cdot w_{Light}}{d_{Blocker}} ">
+
+<p>图16为游戏《消逝的光芒》（<em>Dying Light</em>）中开启了PCSS的截图，可以从电线杆的影子中清晰的看到软阴影的变化。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/dying-light-pcss-001-on.png" width="800">
+
+<p>​                                                  图源：<a target="_blank" rel="noopener" href="https://shadowalgorithms.nvidia.com/geforce-com/international/comparisons/dying-light/dying-light-nvidia-pcss-interactive-comparison-001-pcss-on-vs-off.html">Nvidia 图片库</a></p>
+<center>图16、游戏《消逝的光芒》截图</center>
+
+<h2 id="方差阴影贴图（Variance-Shadow-Maps）"><a href="#方差阴影贴图（Variance-Shadow-Maps）" class="headerlink" title="方差阴影贴图（Variance Shadow Maps）"></a>方差阴影贴图（Variance Shadow Maps）</h2><h3 id="PCF的缺陷"><a href="#PCF的缺陷" class="headerlink" title="PCF的缺陷"></a>PCF的缺陷</h3><p>PCF在每一次进行阴影计算时，是将阴影贴图的一个范围的所有像素的深度和一个阴影值 <em>t</em> 进行比较，再将比较的结果进行平均；这个平均后的结果，其实就是这个范围内，深度值<strong>大于</strong> <em>t</em> 的像素的比例。正是为了得到这个比例，PCF查询（或采样）了这个范围内的所有像素，这种采样本身是非常耗时的；然而，为了能有好的效果，采样的范围却不能太小。能不能不查询（或采样）这个范围的像素呢？同时，显卡本身提供了内置的Mipmap以及各向异性滤波方法，用于对贴图进行模糊。那么，有没有办法让阴影的计算也能用上这种显卡内置的滤波能力呢？</p>
+<h3 id="方差阴影贴图的算法原理"><a href="#方差阴影贴图的算法原理" class="headerlink" title="方差阴影贴图的算法原理"></a>方差阴影贴图的算法原理</h3><p>方差阴影贴图算法[7]提出了一个大胆的想法：假设知道了这个范围内所有像素的深度的分布，那么我们就能很快的得到深度值大于 <em>t</em> 的像素的比例，从而不需要进行更多的采样。</p>
+<p>那么深度的分布要怎么得到呢？方差阴影贴图找到了切比雪夫不等式（Chebyshev’s Inequality）：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space; P(x\geq t) \leq \frac{\sigma^2}{\sigma^2 + (t - \mu)^2}, \quad\text{for }t > \mu">
+
+<p>其中，<img src="https://latex.codecogs.com/svg.latex?\Large&space; \sigma"> 是分布的标准差，<img src="https://latex.codecogs.com/svg.latex?\Large&space; \mu"> 是分布的均值，<img src="https://latex.codecogs.com/svg.latex?\Large&space; P(x\geq t) "> 是大于 <em>t</em> 的值的比例。这个不等式告诉我们，如果我们知道了一个分布的均值和方差，那么对于大于均值的 <em>t</em>，我们可以立刻知道分布中比 <em>t</em> 大的值的最大比例。若直接用这个最大比例来估计阴影贴图的深度比较结果，我们不就可以立刻知道，对于一个位置，它是不是处于阴影之中了么？而对于 <img src="https://latex.codecogs.com/svg.latex?\Large&space; t \leq \mu"> 的情况，方差阴影贴图算法直接认为这个位置是处于非阴影中的。</p>
+<p>这样，我们就剩下了一个问题，要怎么方便的得到一个范围内的均值和方差？</p>
+<p>均值好办，这可以用 Mipmaps 或者是求和面积表（Summed-area table）来进行快速计算。那么方差呢？且看下面的式子：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;\sigma^2 = E(x^2) - E(x)^2">
+
+<p>这个式子告诉我们，方差的计算可以用平方的均值减去均值的平方来得到。所以当计算阴影贴图中各个像素的深度的时候，同时计算深度的平方并保存下来，不就可以快速得到深度的平方的期望了么？如果深度占用了深度贴图的一个通道，深度的平方可以存放在未使用的其他通道，所以深度的平方的计算和保存，都可以在计算阴影贴图时很方便地“顺手”完成。同时，由于 <img src="https://latex.codecogs.com/svg.latex?\Large&space;E(x^2)"> 和 <img src="https://latex.codecogs.com/svg.latex?\Large&space;E(x)"> 是可以被插值的，所以显卡内置的滤波技术——Mipmapping和各项异性滤波——可以被用来降低阴影贴图的锯齿。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/VSM.png" width="600">
+
+<p>​                      图源：Variance Shadow Maps</p>
+<center>图17、VSM算法效果比较。从左到右分别为各个算法的效果：(a)标准的阴影映射；(b)5x5的PCF；(c)5x5的PCF，并在深度比较结果上进行2x2的双线性插值(d)VSM</center>
+
+<p>图17为算法原论文中作者得到的结果：在GeForce 6800GT上，图17(d)中的VSM和图17(c)的效果类似，效率却是至少3倍以上。</p>
+<h3 id="VSM-的问题——以及MSM、CSM、ESM"><a href="#VSM-的问题——以及MSM、CSM、ESM" class="headerlink" title="VSM 的问题——以及MSM、CSM、ESM"></a>VSM 的问题——以及MSM、CSM、ESM</h3><p>当然了，VSM也有一些问题：将深度的分布都用均值和方差描述了，在方差比较大的时候，就容易出现原本不该有的非阴影部分（Light leaking）。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/vsm_light_bleeding.png" width="400">
+
+<p>​                                     图源：<a target="_blank" rel="noopener" href="https://pixelstoomany.wordpress.com/category/shadows/light-bleeding/">pixelstoomany</a></p>
+<center>图18、VSM的 Light bleeding 现象（水壶盖子周边的阴影被错误的计算，就像漏光一样）</center>
+
+<p>这种 Light bleeding 现象，本质上还是使用切比雪夫不等式来对深度分布的估计过于简单。在数学中，矩（Moment）可以被用来描述随机变量的分布，比如随机变量的期望就是一阶矩，其方差就是二阶矩。在切比雪夫不等式中，我们只使用了一阶矩<img src="https://latex.codecogs.com/svg.latex?\Large&space;E(x)">和二阶矩<img src="https://latex.codecogs.com/svg.latex?\Large&space;\sigma^2 ">；就像泰勒展开的项数越多近似越准确一样，用越多不同阶的矩去近似一个分布，就能得到越准确的结果，这也就是<strong>矩阴影映射算法（Moment Shadow Mapping）</strong>[8]的思路。在使用前四阶矩的情况下，矩阴影映射算法可以得到非常不错的效果（图19）。</p>
+<p><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/MSM_vsm.png" width="500"><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/MSM_msm.png" width="500"></p>
+<p>图源：Moment Shadow Mapping</p>
+<center>图19、阴影结果比较。左图：VSM；右图：MSM</center>
+
+<p><strong>卷积阴影贴图（Convolution Shadow Maps）</strong>[9]以及<strong>指数阴影贴图（Exponential Shadow Maps）</strong>[10]用了不同的思路去解决阴影映射的走样问题：相对于VSM的估计深度的分布，它们选择了去近似深度测试函数。其中，卷积阴影贴图使用了傅里叶级数来进行近似，这种方法不会产生漏光现象，并且可以得到很好的阴影效果，代价是需要将傅里叶级数的系数存在新的贴图中，大大增加了存储量；指数阴影贴图使用指数函数了来进行近似深度测试函数，避免了大量的存储开销，不过在阴影接收物的边界存在阴影不稳定的问题。</p>
+<p><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/ConvSM.png" width="500"><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/ESM.png" width="400"></p>
+<center>图20、左图：卷积阴影贴图结果(7x7 blur and mip-mapping)；右图：指数阴影贴图结果（using 5×5 Gauss filtering）</center>
+
+<h3 id="方差软阴影映射算法（Variance-Soft-Shadow-Mapping）"><a href="#方差软阴影映射算法（Variance-Soft-Shadow-Mapping）" class="headerlink" title="方差软阴影映射算法（Variance Soft Shadow Mapping）"></a>方差软阴影映射算法（Variance Soft Shadow Mapping）</h3><p>方差阴影贴图算法解决了快速近似PCF的问题，如果要计算软阴影，还需要知道遮挡物搜索（Blocker search）要怎么做。</p>
+<p>遮挡物搜索，其实就是在阴影贴图的一个范围内找到比一个值 <em>t</em> 小的像素，以这些像素的深度的平均值来作为遮挡物的深度。</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/number_area.png" width="180">
+
+<p>​                                      图源：Games202</p>
+<center>图21、一个5x5大小的深度贴图的例子</center>
+
+<p>比如在图21中，假设我们的要查询的深度为7，那么深度比7更小的（蓝色的数字）就是遮挡物，我们记它们的平均深度为<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">；而红色的部分，我们记它们的平均深度为非遮挡物深度<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}">。</p>
+<p>对于一个一共有 <em>N</em> 个点的范围，加入比 <em>t</em> 深度小的点共有 <img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;N_1">个，深度大于等于 <em>t</em> 的点共有 <img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;N_2">个，那么有下面这样的等式：</p>
+<img src="https://latex.codecogs.com/svg.latex?\Large&space;\frac{N_1}{N} z_{occ} + \frac{N_2}{N}z_{unocc} = z_{avg} ">
+
+<p>其中<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{avg} ">是深度的平均值。在上面的等式中，只有<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{avg} ">和 <em>N</em> 是我们知道的，要怎么得到<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">呢？</p>
+<p>首先看<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; \frac{N_2}{N} ">，这是深度大于等于 <em>t</em> 的点的比例，这不就是我们刚刚在切比雪夫不等式中的<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; P(x\geq t) ">么？而如果<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; \frac{N_2}{N} ">已经知道了，<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; \frac{N_1}{N} ">也就自然知道了（<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; 1 - \frac{N_2}{N} ">）。接下来，只要再做一个大胆的假设：<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}=t">，那么<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">就可以很方便地计算出来了！</p>
+<p><img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}=t"> 这个近似，相当于是说阴影的接收点处于一个和光源平行的平面，所以当这个条件不满足的时候，这个近似就不够准确了。虽然如此，在一般情况下，VSSM都可以得到很好的结果（图22）</p>
+<img style="float: center;" src="/2022/11/29/ShadowAlgorithms/VSSM.jpg" width="500">
+
+<p>​图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps">GPUGems3 - Chapter 8</a></p>
+<center>图22、VSSM算法得到的软阴影</center>
+
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文的内容框架来自于一个非常棒的实时渲染在线课程 <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1YK4y1T7yY?from=search&seid=11430567094229083133">Games 202</a> 的第三讲及第四讲，十分推荐。<br>文章中用到的参考链接及参考文献已被列在了文章末尾。</p>
+<p><strong>参考链接</strong></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1YK4y1T7yY?from=search&seid=11430567094229083133">Games 202</a><br><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%98%B4%E5%BD%B1%E8%B4%B4%E5%9B%BE">维基百科的Shadow mapping</a><br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing">GPUGems chapter 11-shadow-map-antialiasing</a><br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus">GPUGems3 chapter-10-parallel-split-shadow-maps-programmable-gpus</a><br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps">GPUGems3 - Chapter 8</a><br><a target="_blank" rel="noopener" href="https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping">https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping</a></p>
+<p><strong>参考文献</strong></p>
+<p>[1] Williams L. Casting curved shadows on curved surfaces[C]&#x2F;&#x2F;Proceedings of the 5th annual conference on Computer graphics and interactive techniques. 1978: 270-274.<br>[2] Stamminger M, Drettakis G. Perspective shadow maps[C]&#x2F;&#x2F;Proceedings of the 29th annual conference on Computer graphics and interactive techniques. 2002: 557-562.<br>[3] Fernando R, Fernandez S, Bala K, et al. Adaptive shadow maps[C]&#x2F;&#x2F;Proceedings of the 28th annual conference on Computer graphics and interactive techniques. 2001: 387-390.<br>[4] Zhang F, Sun H, Xu L, et al. Parallel-split shadow maps for large-scale virtual environments[C]&#x2F;&#x2F;Proceedings of the 2006 ACM international conference on Virtual reality continuum and its applications. 2006: 311-318.<br>[5] Reeves W T, Salesin D H, Cook R L. Rendering antialiased shadows with depth maps[C]&#x2F;&#x2F;Proceedings of the 14th annual conference on Computer graphics and interactive techniques. 1987: 283-291.<br>[6] Fernando R. Percentage-closer soft shadows[M]&#x2F;&#x2F;ACM SIGGRAPH 2005 Sketches. 2005: 35-es.<br>[7] Donnelly W, Lauritzen A. Variance shadow maps[C]&#x2F;&#x2F;Proceedings of the 2006 symposium on Interactive 3D graphics and games. 2006: 161-165.<br>[8] Peters C, Klein R. Moment shadow mapping[C]&#x2F;&#x2F;Proceedings of the 19th Symposium on Interactive 3D Graphics and Games. 2015: 7-14.<br>[9] Annen T, Mertens T, Bekaert P, et al. Convolution Shadow Maps[J]. Rendering Techniques, 2007, 18: 51-60.<br>[10] Annen T, Mertens T, Seidel H P, et al. Exponential shadow maps[C]&#x2F;&#x2F;Graphics Interface. ACM Press, 2008: 155-161.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/11/Universal-Reference/" rel="prev" title="Universal Reference in C++11">
+      <i class="fa fa-chevron-left"></i> Universal Reference in C++11
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%88%E7%A7%BB%E7%96%8F%E5%BD%B1%E4%B8%8A%E4%B8%9C%E5%A2%99%E2%80%94%E2%80%94%E7%AE%80%E8%BF%B0%E9%98%B4%E5%BD%B1%E6%98%A0%E5%B0%84%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">月移疏影上东墙——简述阴影映射算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%A8%A1%E6%8B%9F%E7%9C%9F%E5%AE%9E%E4%B8%96%E7%95%8C%E4%B8%AD%E7%9A%84%E9%98%B4%E5%BD%B1%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">如何模拟真实世界中的阴影？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%B4%E5%BD%B1%E6%98%A0%E5%B0%84%EF%BC%88Shadow-Mapping-%EF%BC%89%E7%9A%84%E7%94%B1%E6%9D%A5"><span class="nav-number">1.2.</span> <span class="nav-text">阴影映射（Shadow Mapping ）的由来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%98%B4%E5%BD%B1%E6%98%A0%E5%B0%84%EF%BC%9F"><span class="nav-number">1.2.1.</span> <span class="nav-text">什么是阴影映射？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B4%E5%BD%B1%E6%98%A0%E5%B0%84%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.2.</span> <span class="nav-text">阴影映射的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E8%B5%B0%E6%A0%B7%EF%BC%88%E9%94%AF%E9%BD%BF%EF%BC%89%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">一、走样（锯齿）问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%87%AA%E9%81%AE%E6%8C%A1%E5%8F%8A%E9%98%B4%E5%BD%B1%E8%84%B1%E7%A6%BB%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">二、自遮挡及阴影脱离问题</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E6%B8%B2%E6%9F%93%E6%96%B9%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8B-Shadow-mapping"><span class="nav-number">1.2.3.</span> <span class="nav-text">从渲染方程的角度看 Shadow mapping</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%95%B0%E5%AD%A6%E8%BF%91%E4%BC%BC"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">一个数学近似</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%91%E4%BC%BC%E7%9A%84%E6%B8%B2%E6%9F%93%E6%96%B9%E7%A8%8B"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">近似的渲染方程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AF%E9%98%B4%E5%BD%B1%E7%AE%97%E6%B3%95"><span class="nav-number">1.3.</span> <span class="nav-text">软阴影算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%BD%AF%E9%98%B4%E5%BD%B1%EF%BC%9F"><span class="nav-number">1.3.1.</span> <span class="nav-text">什么是软阴影？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B4%E5%BD%B1%E6%8A%97%E9%94%AF%E9%BD%BF%E7%AE%97%E6%B3%95%E2%80%94%E2%80%94Percentage-Closer-Filtering"><span class="nav-number">1.3.2.</span> <span class="nav-text">阴影抗锯齿算法——Percentage Closer Filtering</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AF%E9%98%B4%E5%BD%B1%E7%AE%97%E6%B3%95%E2%80%94%E2%80%94Percentage-Closer-Soft-Shadows%EF%BC%88PCSS%EF%BC%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">软阴影算法——Percentage Closer Soft Shadows（PCSS）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%B7%AE%E9%98%B4%E5%BD%B1%E8%B4%B4%E5%9B%BE%EF%BC%88Variance-Shadow-Maps%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">方差阴影贴图（Variance Shadow Maps）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PCF%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="nav-number">1.4.1.</span> <span class="nav-text">PCF的缺陷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E5%B7%AE%E9%98%B4%E5%BD%B1%E8%B4%B4%E5%9B%BE%E7%9A%84%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86"><span class="nav-number">1.4.2.</span> <span class="nav-text">方差阴影贴图的算法原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VSM-%E7%9A%84%E9%97%AE%E9%A2%98%E2%80%94%E2%80%94%E4%BB%A5%E5%8F%8AMSM%E3%80%81CSM%E3%80%81ESM"><span class="nav-number">1.4.3.</span> <span class="nav-text">VSM 的问题——以及MSM、CSM、ESM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E5%B7%AE%E8%BD%AF%E9%98%B4%E5%BD%B1%E6%98%A0%E5%B0%84%E7%AE%97%E6%B3%95%EF%BC%88Variance-Soft-Shadow-Mapping%EF%BC%89"><span class="nav-number">1.4.4.</span> <span class="nav-text">方差软阴影映射算法（Variance Soft Shadow Mapping）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">1.5.</span> <span class="nav-text">结语</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wizlyk</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wizlyk</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

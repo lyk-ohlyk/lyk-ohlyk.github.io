@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="约瑟夫问题维基百科 描述约瑟夫问题（有时也称为约瑟夫斯置换），是一个出现在计算机科学和数学中的问题。在计算机编程的算法中，类似问题又称为约瑟夫环。 人们站在一个等待被处决的圈子里。 计数从圆圈中的指定点开始，并沿指定方向围绕圆圈进行。 在跳过指定数量的人之后，执行下一个人。 对剩下的人重复该过程，从下一个人开始，朝同一方向跳过相同数量的人，直到只剩下一个人，并被释放。 问题即，给定人数、起点、方向">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Josephus Permutation">
+<meta property="og:url" content="http://yoursite.com/2019/08/10/Josephus-Permutation/index.html">
+<meta property="og:site_name" content="wizlyk">
+<meta property="og:description" content="约瑟夫问题维基百科 描述约瑟夫问题（有时也称为约瑟夫斯置换），是一个出现在计算机科学和数学中的问题。在计算机编程的算法中，类似问题又称为约瑟夫环。 人们站在一个等待被处决的圈子里。 计数从圆圈中的指定点开始，并沿指定方向围绕圆圈进行。 在跳过指定数量的人之后，执行下一个人。 对剩下的人重复该过程，从下一个人开始，朝同一方向跳过相同数量的人，直到只剩下一个人，并被释放。 问题即，给定人数、起点、方向">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-10T01:12:04.000Z">
+<meta property="article:modified_time" content="2022-11-29T12:38:11.767Z">
+<meta property="article:author" content="wizlyk">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/08/10/Josephus-Permutation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Josephus Permutation | wizlyk</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wizlyk</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wizlyk的代码小天地</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/10/Josephus-Permutation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wizlyk">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wizlyk">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Josephus Permutation
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-10 09:12:04" itemprop="dateCreated datePublished" datetime="2019-08-10T09:12:04+08:00">2019-08-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-11-29 20:38:11" itemprop="dateModified" datetime="2022-11-29T20:38:11+08:00">2022-11-29</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="约瑟夫问题"><a href="#约瑟夫问题" class="headerlink" title="约瑟夫问题"></a>约瑟夫问题</h1><p><code>维基百科</code></p>
+<h2 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h2><p><strong>约瑟夫问题</strong>（有时也称为<strong>约瑟夫斯置换</strong>），是一个出现在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6">计算机科学</a>和<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%95%B0%E5%AD%A6">数学</a>中的问题。在计算机<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E7%BC%96%E7%A8%8B">编程</a>的算法中，类似问题又称为<strong>约瑟夫环</strong>。</p>
+<p>人们站在一个等待被处决的圈子里。 计数从圆圈中的指定点开始，并沿指定方向围绕圆圈进行。 在跳过指定数量的人之后，执行下一个人。 对剩下的人重复该过程，从下一个人开始，朝同一方向跳过相同数量的人，直到只剩下一个人，并被释放。</p>
+<p>问题即，给定人数、起点、方向和要跳过的数字，选择初始圆圈中的位置以避免被处决。</p>
+<h2 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h2><p>这个问题是以<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%BC%97%E6%8B%89%E7%B6%AD%E5%A5%A7%C2%B7%E7%B4%84%E7%91%9F%E5%A4%AB%E6%96%AF">弗拉维奥·约瑟夫</a>命名的，他是1世纪的一名犹太历史学家。他在自己的日记中写道，他和他的40个战友被罗马军队包围在洞中。他们讨论是自杀还是被俘，最终决定自杀，并以抽签的方式决定谁杀掉谁。约瑟夫斯和另外一个人是最后两个留下的人。约瑟夫斯说服了那个人，他们将向罗马军队投降，不再自杀。约瑟夫斯把他的存活归因于运气或天意，他不知道是哪一个。</p>
+<hr>
+<p><code>wizlyk</code></p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>这个问题的背景还是挺沉重的，但我们现在关心的是怎么解决这个问题。</p>
+<p>约瑟夫环问题可以有很多种问法，比如找到一定次数后不会被出列的位置、给出出列的顺序、判断最后剩下的人的位置等等，接下来我们将对这些问题给出一个统一的解决方案。</p>
+<p>问题：假设队列中一共有n个人，每次找到第m个人出列，然后从第m+1个人开始数，再找第m个人出列，直到队列里空无一人。求每次出列的人在原队列中的位置。</p>
+<p>首先，直接从模拟操作入手，可以用链表或数组，每次移动一定的位置并做好标记（链表可以删除节点，数组可以做标记），然后每次输出找到的位置就行。对于链表，移动的总步数在 O(n*m)的量级，对于数组，移动的总步数在O(n^2)的量级。</p>
+<p>上面的做法，判断最后一个剩下的人的位置需要O(n*m)的时间。但由于问题的规则已经非常清楚了，每一步操作后，下一步的状态已经确定，那么有没有O(n)的办法直接得到最后一个人的位置呢？</p>
+<p>答案当然是有的。</p>
+<p>要做到O(n)，首先要考虑每一步和其上一步的关系，只有能在O(1)的时间内得到转移的方式，才能实现O(n)的总体时间复杂度。</p>
+<p>假设在倒数第i步，未出列的共i个人，第一个报数的人编号记为0（记为1也行，但在稍后的求余操作中会多出减1和加1的操作，不够简洁）。考虑在第m个人出列后，倒数第(i-1)步的编号变化。见下表。</p>
+<table>
+<thead>
+<tr>
+<th align="center">倒数第i步的编号</th>
+<th align="center">倒数第(i-1)步的编号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center">i - m</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">i - m + 1</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">i - m +２</td>
+</tr>
+<tr>
+<td align="center">…</td>
+<td align="center">…</td>
+</tr>
+<tr>
+<td align="center">m - 2</td>
+<td align="center">i - 2</td>
+</tr>
+<tr>
+<td align="center">m - 1 (出列位置)</td>
+<td align="center">- (无)</td>
+</tr>
+<tr>
+<td align="center">m</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center">…</td>
+<td align="center">…</td>
+</tr>
+<tr>
+<td align="center">i - 1</td>
+<td align="center">i - m - 1</td>
+</tr>
+</tbody></table>
+<p>若记倒数第i步的第k个位置标号为 $f(i, k)$,则有</p>
+<p>$$f(i,k) &#x3D; \big(f(i-1,k)+m\big) \mod i$$</p>
+<p>这个公式告诉我们，当我们知道后面出列的人在其队列中的编号，我们可以推出他在<strong>出列前的编号</strong>。比如我们知道最后一个人出列时他的编号只能为0（因为队伍只有一个人），那么就可以一直推出最后出列的人在初始队列中的编号。</p>
+<p>举个例子，n&#x3D;4，m&#x3D;3，求最后一次出列的人在队列中的编号。</p>
+<table>
+<thead>
+<tr>
+<th>倒数第i次（剩下i个人）</th>
+<th>编号</th>
+<th>计算公式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>(0 + 3) % 2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>(1 + 3) % 3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>(1 + 3) % 4</td>
+</tr>
+</tbody></table>
+<p>则可知最后一次出列的人编号为0。</p>
+<p>那么如果我们想知道第k个出列的人是谁怎么办呢？可以知道，第k个出列的人出列前，队伍里剩下(n-k+1)个人，而他现在在队伍里的编号是 $(m-1) \mod (n-k+1)$。因此，我们可以用递归来求：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 求第k次出列的人的编号</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">JosephusProblem</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span> m, <span class="type">int</span> k)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (k == <span class="number">1</span>) <span class="keyword">return</span> (m - <span class="number">1</span>) % n;</span><br><span class="line">  <span class="keyword">return</span> (<span class="built_in">JosephusProblem</span>(n - <span class="number">1</span>, m, k - <span class="number">1</span>) + m) % n ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>用上递归后，程序非常的简洁。由于是尾递归，可以很容易地写成迭代的方式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> ans = <span class="number">-1</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= k; ++i) &#123;</span><br><span class="line">    ans = (ans + m) % (n - k + i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要求最后一个出列的人，只需要调用<code>JosephusProblem(n, m, n)</code> 就可以了。</p>
+<p>有意思的是，虽然可以在O(k)的时间内找到第k个出列的人，但要用这种方法打印出整个出列序列，还是需要$1+2 + … +n &#x3D; O(n^2)$ 的时间复杂度。</p>
+<p>留下的问题：</p>
+<ul>
+<li>能在 O(n) 的时间复杂度下打印出整个出列序列么？</li>
+<li>或是说，是否存在 O(1) 的时间复杂度的算法，即一个数学公式，来求出第 k 个出列的人的编号？</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/09/Knapsack-Problem/" rel="prev" title="Knapsack Problem">
+      <i class="fa fa-chevron-left"></i> Knapsack Problem
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/11/EMC-notes-1/" rel="next" title="Deducing Types - 《Effective Modern C++》阅读笔记（一）">
+      Deducing Types - 《Effective Modern C++》阅读笔记（一） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BA%A6%E7%91%9F%E5%A4%AB%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">约瑟夫问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%86%E5%8F%B2"><span class="nav-number">1.2.</span> <span class="nav-text">历史</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">分析</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wizlyk</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wizlyk</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
