@@ -114,6 +114,11 @@
     <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
 
   </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
         <li class="menu-item menu-item-archives">
 
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
@@ -169,10 +174,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-11-29 21:43:27 / 修改时间：22:42:49" itemprop="dateCreated datePublished" datetime="2022-11-29T21:43:27+08:00">2022-11-29</time>
+              <time title="创建时间：2022-11-29 21:43:27" itemprop="dateCreated datePublished" datetime="2022-11-29T21:43:27+08:00">2022-11-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-11-30 21:54:35" itemprop="dateModified" datetime="2022-11-30T21:54:35+08:00">2022-11-30</time>
+              </span>
 
           
 
@@ -195,7 +206,6 @@
 <p>正如被晨曦拉长的幢幢高楼，正如夏日微风中的斑驳树影，是阴影让光变得更加跳脱、丰富。本文简述了在虚拟场景中模拟出真实世界的阴影效果的实时渲染方法——阴影映射（Shadow mapping）的基本原理和其相关算法，同时介绍了阴影映射算法存在的问题以及软阴影现象，希望能帮助大家对阴影映射有一个大概的认识。</p>
 <h2 id="如何模拟真实世界中的阴影？"><a href="#如何模拟真实世界中的阴影？" class="headerlink" title="如何模拟真实世界中的阴影？"></a>如何模拟真实世界中的阴影？</h2><p>在我们的宏观世界中，光沿着直线传播，并且会被物体吸收，同时形成反射和折射。对于阴影来说，我们只需要模拟光被物体吸收（挡住）就可以了。这要怎么做呢？</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/EyeShadow.png" width="400">
-
 <center>图1、阴影产生示意图</center>
 
 <p>如图1所示，当眼睛看到的地方和光源之间有阻挡的时候，这个地方就处于阴影之中。我们在把一个场景画到屏幕的时候，就是把场景的一个个位置投射到屏幕的像素上；那么，对于画在屏幕上的每个像素对应的位置，都判断一下这个位置和光源之间有没有阻挡，不就可以知道这个位置是不是在阴影中了么？</p>
@@ -203,25 +213,18 @@
 <h2 id="阴影映射（Shadow-Mapping-）的由来"><a href="#阴影映射（Shadow-Mapping-）的由来" class="headerlink" title="阴影映射（Shadow Mapping ）的由来"></a>阴影映射（Shadow Mapping ）的由来</h2><h3 id="什么是阴影映射？"><a href="#什么是阴影映射？" class="headerlink" title="什么是阴影映射？"></a>什么是阴影映射？</h3><p>在计算阴影时，我们是真的想知道光被什么东西挡住了么？不，我们只关心光是否被挡住。那么，其实我们只需要知道被计算的位置和光源之间有没有东西就可以了！</p>
 <p>在将场景绘制到屏幕时，人们往往会记录一个像素对应的位置距离摄像机的距离（即深度），并把这些深度保存在一张和屏幕一样大的图片上以方便一些其他的计算，这样的记录深度的图被称作深度图（Depth map）。深度图的每个像素，记录了向这个像素的方向看过去的最近的距离。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/DepthSquirrel.png" width="400">
-
 <center>图2、一个松鼠模型的深度图，颜色越白表示离相机越近
     (图源：A Gauss-Newton Approach to Real-Time Monocular Multiple Object Tracking)</center>
 
 <p>回到我们刚才计算阴影的问题，假如我们知道了对于光源来说各个方向的最近的距离，那么对于场景中的每个位置，我们都看它离光源的距离比这个最近距离大还是小，不就可以知道该位置是不是在阴影中了么——若离光源的距离大于对应方向的最近距离，则说明前面有东西遮挡；若离光源的距离等于对应方向的最近距离，说明该位置被光源照亮了，即没有阴影。</p>
 <p>所以我们只需要在光源处，对场景计算一张深度图，对于场景中的每个位置，都把他投射到这张深度图上，将该位置的深度与深度图上对应像素的深度进行对比，就能知道这个位置是否处于阴影中。这种使用光源的深度图来计算阴影的方法，就叫做阴影映射，也就是Shadow mapping【1】，而这张深度图，则被称作阴影贴图（Shadow map）。</p>
 <p>来看一个来自于<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%98%B4%E5%BD%B1%E8%B4%B4%E5%9B%BE">维基百科的阴影映射</a>的例子。图3(a)是一个有阴影的帕特农神庙模型，光源为在左侧向右照射的平行光。</p>
-<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\7fin.png" width="224">
-<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\3noshadow.png" width="224">
-<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\1light.png" width="224">
-<img style="float: left;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\2shadowmap.png" width="224">
-
-
+<p><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\7fin.png" width="224"><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\3noshadow.png" width="224"><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\1light.png" width="224"><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\2shadowmap.png" width="224"></p>
 <center>(a)一个有阴影的“帕特农神庙”   (b)无阴影  (c) 光源视角 (d) 阴影贴图</center>
 <center>图3、一个有阴影的“帕特农神庙”的计算过程</center>
 
 <p>在使用阴影映射前，场景是没有阴影的，如图3(b)所示。要从图3(b)中得到图3(a)的结果，我们需要从光源处计算一张深度贴图。图3(c)即为从光源视角看向场景的样子。计算出来的阴影贴图为图3(d)，图3(d)和上面的图2的深度图一样，都是颜色越白，表示离观察点（图2为摄像机、图3(d)为光源）越近。有了深度贴图，那么就可以进行深度测试，判断图3(b)中的哪些像素是处于阴影中了，深度测试的结果见图4。有了图4，就能把渲染的结果，从图3(b)变为图3(a)了！</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/Wiki-ShadowMapping\5failed.png" width="300">
-
 <center>图4、在阴影贴图上深度测试失败的像素（图中白色部分），即处于阴影中的像素</center>
 
 <p>总的来说，阴影映射是一个有两个渲染 pass 的算法：在第一个 pass，先在光源处，将场景物体离光源的深度写进阴影贴图；在第二个 pass，进行深度判断，将整个含阴影的场景渲染出来。</p>
@@ -233,7 +236,7 @@
 <p>这种出现锯齿的表现误差，又被人们划分成了由透视产生的锯齿(Perspective aliasing)和由投影产生的锯齿(Projection aliasing)【2】。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/AliasingError.png" width="500">
 
-<p>​                        图6、阴影贴图锯齿的产生原因示意图（图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus">GPUGems3 - Chapter 10</a>）</p>
+<p>​​<center>图6、阴影贴图锯齿的产生原因示意图（图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus">GPUGems3 - Chapter 10</a>）​</center></p>
 <p>图6解释了锯齿产生的原因：图6表示了一束平行光从上往下照射，相机位于左侧的场景，我们考虑图像中勇士的手臂的阴影；<em><strong>n</strong></em>表示相机的近平面的距离（假设屏幕绘制在近平面），<em><strong>f</strong></em>表示相机的远平面的距离，<em><strong>s</strong></em>为归一化后的阴影平面，<em><strong>z</strong></em>表示勇士手臂离相机的距离，<em><strong>ds</strong></em>是勇士手臂投影到在阴影平面上的长度，<em><strong>dp</strong></em>是勇士手臂投影到屏幕上的长度。此时，阴影贴图的走样误差（aliasing error）可以被表示为</p>
 <img src="https://latex.codecogs.com/svg.latex?\Large&space;\frac{\mathrm{d}p}{\mathrm{d}s}=n\frac{\mathrm{d}z}{z\mathrm{d}s}\frac{\mathrm{cos}\phi}{\mathrm{cos}\theta}" title="Aliasing error">
 
@@ -249,7 +252,6 @@
 <li><strong>透视阴影贴图（perspective shadow maps ，PSM）</strong>【2】：在透视变换后的空间生成阴影贴图，大大减少了由透视产生的锯齿，并且更加充分的利用了贴图分辨率。</li>
 </ul>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/PSM.png" width="700">
-
 <center>图7、左图为世界空间、右图为透视变换后的空间（图源：Perspective shadow maps）</center>
 
 <ul>
@@ -259,28 +261,24 @@
 </li>
 </ul>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/CSM.png" width="600">
-
 <center>图8、级联阴影贴图示意图，图中相机视锥被划分为4个部分，红框为每个部分的光源视锥的包围盒</center>
 
 <h4 id="二、自遮挡及阴影脱离问题"><a href="#二、自遮挡及阴影脱离问题" class="headerlink" title="二、自遮挡及阴影脱离问题"></a>二、自遮挡及阴影脱离问题</h4><p>除了锯齿现象，阴影映射算法（Shadow mapping）还有自遮挡（self occlusion）引发的阴影失真（Shadow acne）的问题。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/shadow_acne.png" width="450">
-
 <center>图9：阴影失真问题（水壶：我挡我自己）（图源：http://ohyecloudy.com/pnotes/archives/377/）</center>
 
 <p>如图9所示，虽然图片中的水壶的阴影被画了出来，但整个场景却被一道道奇怪的黑色条纹笼罩，仿佛有一层纱把灯挡住一样。这是为什么呢？</p>
 <p>这也是因为我们的分辨率有限产生的。由于我们是用的阴影贴图来描述整个场景，每一个阴影贴图的像素对应了一块区域，而这块区域的深度被假设成一致的。图10描述了为什么这样会出现自遮挡的问题：图10中假设光源从左上照射向右下，照到了长条形的地板上；每个黄色的箭头，都对应一个阴影贴图的像素；图中蓝色的阶梯状边界，就是阴影贴图所表现的场景的深度。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/shadow_mapping_self_occlusion.png">
-
 <center>图10、阴影失真原理示意图</center>
 
 <p>我们的地面是连续的，而阴影贴图的像素是离散的，贴图的深度只能看作是对连续的地面深度的近似。所以，可以看到在一个阴影贴图像素所表示的地面上，会同时存在阴影中和非阴影中两个状态；整个地面上，阴影区域和非阴影区域交替出现，形成自遮挡的现象。要怎么避免自遮挡现象呢？</p>
 <p>当然了，如果光源方向完全垂直于地面的话，这个阶梯就和地面重合了，这种自遮挡现象自然就没有了；而对于不是垂直的情况，可以通过增加一个偏移来避免自遮挡——就是把这个蓝色的阶梯向光照方向移动一段距离，阴影的部分自然就少了，从而避免了自遮挡现象（图11）。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/shadow_mapping_bias.png">
-
 <center>图11、增加偏移量以避免自遮挡现象</center>
 
 <p>但是，把阶梯移动后，又有了新的问题：强行加上偏移，必然会使一些原本正确的阴影变的看不见了，这就是阴影脱离（Detached shadow）现象，人们又调皮的给了它一个另外的名字——彼得潘现象（Peter Panning）。</p>
-<p><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/rtr4-detached-shadow.png" width="400"><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/peter-pan.png" width="600"></p>
+<p><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/rtr4-detached-shadow.png" width="400"><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/peter-pan.png" width="600"></p>
 <p>(a)增加阴影偏移后，脚的阴影消失（图源：<a target="_blank" rel="noopener" href="https://www.realtimerendering.com/figures/RTR4.07.12.Peters_demo.png">Real-Time Rendering</a>）         (b)小飞侠彼得潘正尝试抓住自己的影子（图源：Walt Disney Productions）</p>
 <center>图12、阴影脱离（Detached shadow）现象</center>
 
@@ -312,7 +310,6 @@
 <h2 id="软阴影算法"><a href="#软阴影算法" class="headerlink" title="软阴影算法"></a>软阴影算法</h2><h3 id="什么是软阴影？"><a href="#什么是软阴影？" class="headerlink" title="什么是软阴影？"></a>什么是软阴影？</h3><p>观察上面的一些带阴影的例子，大家会发现这些阴影的边界非常清晰，阴影区域和非阴影区域有着很明显的分界线。这似乎和我们平时在生活中看到的阴影不太一样，为什么生活中的阴影往往有着模糊的边界呢？</p>
 <p>这是因为，上面的例子中，我们使用的光源都是方向光源，它只能产生边界清晰的阴影。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/Penumbra2.png" width="600">
-
 <center>图12、本影和半影</center>
 
 <p>图12解释了对于更一般的面光源，阴影边界是过渡的，而不是突变的原因：在图12中，左侧光源是一个面光源，光被遮挡物（一个球）遮挡，而将阴影投射到墙壁上；可以发现，存在一些阴影区域，是完全不能接受到光的，这个区域被称作本影区（Umbra）；同时，也存在一些区域，只能接受到部分光源，这些区域被称作半影区（Penumbra）。在半影区，离本影区越近，接受到的光照就越少——这就是阴影逐渐从暗变为亮的原因。这种由于半影区域的存在而造成的存在过渡的阴影，被称为软阴影（Soft Shadows）。</p>
@@ -320,9 +317,9 @@
 <img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Games202_Mary_HardShadow.png" width="400">
 <img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/Games202_Mary_PCF.png" width="400">
 
-<p>(a)平行光计算出来的人物阴影，在地面上存在明显的锯齿                  (b) 使用了PCF后得到的人物阴影</p>
-<p>​                                     图源：<a target="_blank" rel="noopener" href="https://sites.cs.ucsb.edu/~lingqi/teaching/games202.html">Games202</a>：Assignment 1</p>
-<center>图13、PCF的抗锯齿效果</center>
+
+<center>(a)平行光计算出来的人物阴影，在地面上存在明显的锯齿 (b) 使用了PCF后得到的人物阴影</center>
+<center>图13、PCF的抗锯齿效果(​图源：<a target="_blank" rel="noopener" href="https://sites.cs.ucsb.edu/~lingqi/teaching/games202.html">Games202 </a>Assignment 1)</center>
 
 <p>假设我们渲染的像素是 <em>x</em>，<em>x</em> 对应到阴影贴图的位置是 <em>p</em>，<em>x</em> 对应的可见性为 *V(x)*，则PCF算法的核心思想可以用下面这个公式表示：</p>
 <img src="https://latex.codecogs.com/svg.latex?\Large&space; V(x) = \sum_{q\in N(p)}w(p,q) \cdot \chi^{+}[D_{SM}(q)-D_{scene}(x)]">
@@ -333,7 +330,6 @@
 <p>题外话：或许有人会奇怪 Percentage Closer Filtering 这个命名是怎么来的——该算法来自于一篇87年的论文【5】, Percentage Closer 指的是在一个场景位置对应的一圈阴影贴图的像素上，像素的深度值比该场景位置的深度值距离光源更近（Closer）的像素数量的百分比（Percentage）；而 Filtering，是指多次比较求平均（或加权平均）的这个操作是一个滤波。</p>
 <h3 id="软阴影算法——Percentage-Closer-Soft-Shadows（PCSS）"><a href="#软阴影算法——Percentage-Closer-Soft-Shadows（PCSS）" class="headerlink" title="软阴影算法——Percentage Closer Soft Shadows（PCSS）"></a>软阴影算法——Percentage Closer Soft Shadows（PCSS）</h3><p>从图13(b)可以看到，虽然PCF是用于抗锯齿的，但阴影的边缘看上去已经是软阴影的样子了（有一个阴影过渡带）。但是，整个阴影的边缘的模糊程度是一致（Uniform）的，这和我们在实际生活中看到的不符（图14）。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/Sphere_with_soft_shadow.jpg" width="400">
-
 <center>图14，面光源下，球的正确的软阴影</center>
 
 <p>从图12可以看出，如果我们将物体向墙壁移动，半影区的范围将缩小；正如图14所表现的一样：离球越近，阴影的过渡带越短。</p>
@@ -346,7 +342,6 @@
 </ul>
 <p>具体的估计方法见图15：</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/PCSS.png" width="300">
-
 <center>图15、PCSS算法(图源：Percentage-closer soft shadows)</center>
 
 <p>图15中，光源和地板被认为是平行的，<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;w_{Penumbra}"> 即为半影区的长度，<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space; w_{Light} "> 是光源的长度。可见，光源长度和半影区的长度分别在两个相似三角形上，因此可以得到半影区的长度的计算公式：</p>
@@ -370,32 +365,29 @@
 
 <p>这个式子告诉我们，方差的计算可以用平方的均值减去均值的平方来得到。所以当计算阴影贴图中各个像素的深度的时候，同时计算深度的平方并保存下来，不就可以快速得到深度的平方的期望了么？如果深度占用了深度贴图的一个通道，深度的平方可以存放在未使用的其他通道，所以深度的平方的计算和保存，都可以在计算阴影贴图时很方便地“顺手”完成。同时，由于 <img src="https://latex.codecogs.com/svg.latex?\Large&space;E(x^2)"> 和 <img src="https://latex.codecogs.com/svg.latex?\Large&space;E(x)"> 是可以被插值的，所以显卡内置的滤波技术——Mipmapping和各项异性滤波——可以被用来降低阴影贴图的锯齿。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/VSM.png" width="600">
-
-<p>​                      图源：Variance Shadow Maps</p>
+<center>图源：Variance Shadow Maps</center>
 <center>图17、VSM算法效果比较。从左到右分别为各个算法的效果：(a)标准的阴影映射；(b)5x5的PCF；(c)5x5的PCF，并在深度比较结果上进行2x2的双线性插值(d)VSM</center>
 
 <p>图17为算法原论文中作者得到的结果：在GeForce 6800GT上，图17(d)中的VSM和图17(c)的效果类似，效率却是至少3倍以上。</p>
 <h3 id="VSM-的问题——以及MSM、CSM、ESM"><a href="#VSM-的问题——以及MSM、CSM、ESM" class="headerlink" title="VSM 的问题——以及MSM、CSM、ESM"></a>VSM 的问题——以及MSM、CSM、ESM</h3><p>当然了，VSM也有一些问题：将深度的分布都用均值和方差描述了，在方差比较大的时候，就容易出现原本不该有的非阴影部分（Light leaking）。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/vsm_light_bleeding.png" width="400">
 
-<p>​                                     图源：<a target="_blank" rel="noopener" href="https://pixelstoomany.wordpress.com/category/shadows/light-bleeding/">pixelstoomany</a></p>
+<p>​<center>图源：<a target="_blank" rel="noopener" href="https://pixelstoomany.wordpress.com/category/shadows/light-bleeding/">pixelstoomany</a></center></p>
 <center>图18、VSM的 Light bleeding 现象（水壶盖子周边的阴影被错误的计算，就像漏光一样）</center>
 
 <p>这种 Light bleeding 现象，本质上还是使用切比雪夫不等式来对深度分布的估计过于简单。在数学中，矩（Moment）可以被用来描述随机变量的分布，比如随机变量的期望就是一阶矩，其方差就是二阶矩。在切比雪夫不等式中，我们只使用了一阶矩<img src="https://latex.codecogs.com/svg.latex?\Large&space;E(x)">和二阶矩<img src="https://latex.codecogs.com/svg.latex?\Large&space;\sigma^2 ">；就像泰勒展开的项数越多近似越准确一样，用越多不同阶的矩去近似一个分布，就能得到越准确的结果，这也就是<strong>矩阴影映射算法（Moment Shadow Mapping）</strong>[8]的思路。在使用前四阶矩的情况下，矩阴影映射算法可以得到非常不错的效果（图19）。</p>
-<p><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/MSM_vsm.png" width="500"><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/MSM_msm.png" width="500"></p>
-<p>图源：Moment Shadow Mapping</p>
-<center>图19、阴影结果比较。左图：VSM；右图：MSM</center>
+<p><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/MSM_vsm.png" width="400"><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/MSM_msm.png" width="410"></p>
+<center>图19、阴影结果比较。左图：VSM；右图：MSM(图源：Moment Shadow Mapping​)</center>
 
 <p><strong>卷积阴影贴图（Convolution Shadow Maps）</strong>[9]以及<strong>指数阴影贴图（Exponential Shadow Maps）</strong>[10]用了不同的思路去解决阴影映射的走样问题：相对于VSM的估计深度的分布，它们选择了去近似深度测试函数。其中，卷积阴影贴图使用了傅里叶级数来进行近似，这种方法不会产生漏光现象，并且可以得到很好的阴影效果，代价是需要将傅里叶级数的系数存在新的贴图中，大大增加了存储量；指数阴影贴图使用指数函数了来进行近似深度测试函数，避免了大量的存储开销，不过在阴影接收物的边界存在阴影不稳定的问题。</p>
-<p><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/ConvSM.png" width="500"><img style="float: center;" src="/2022/11/29/ShadowAlgorithms/ESM.png" width="400"></p>
+<p><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/ConvSM.png" width="500"><img style="display: inline;" src="/2022/11/29/ShadowAlgorithms/ESM.png" width="380"></p>
 <center>图20、左图：卷积阴影贴图结果(7x7 blur and mip-mapping)；右图：指数阴影贴图结果（using 5×5 Gauss filtering）</center>
 
 <h3 id="方差软阴影映射算法（Variance-Soft-Shadow-Mapping）"><a href="#方差软阴影映射算法（Variance-Soft-Shadow-Mapping）" class="headerlink" title="方差软阴影映射算法（Variance Soft Shadow Mapping）"></a>方差软阴影映射算法（Variance Soft Shadow Mapping）</h3><p>方差阴影贴图算法解决了快速近似PCF的问题，如果要计算软阴影，还需要知道遮挡物搜索（Blocker search）要怎么做。</p>
 <p>遮挡物搜索，其实就是在阴影贴图的一个范围内找到比一个值 <em>t</em> 小的像素，以这些像素的深度的平均值来作为遮挡物的深度。</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/number_area.png" width="180">
 
-<p>​                                      图源：Games202</p>
-<center>图21、一个5x5大小的深度贴图的例子</center>
+<center>图21、一个5x5大小的深度贴图的例子(图源：<a target="_blank" rel="noopener" href="https://sites.cs.ucsb.edu/~lingqi/teaching/games202.html">Games202​</a>)</center>
 
 <p>比如在图21中，假设我们的要查询的深度为7，那么深度比7更小的（蓝色的数字）就是遮挡物，我们记它们的平均深度为<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{occ}">；而红色的部分，我们记它们的平均深度为非遮挡物深度<img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}">。</p>
 <p>对于一个一共有 <em>N</em> 个点的范围，加入比 <em>t</em> 深度小的点共有 <img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;N_1">个，深度大于等于 <em>t</em> 的点共有 <img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;N_2">个，那么有下面这样的等式：</p>
@@ -406,8 +398,7 @@
 <p><img style="display: inline;" src="https://latex.codecogs.com/svg.latex?\Large&space;z_{unocc}=t"> 这个近似，相当于是说阴影的接收点处于一个和光源平行的平面，所以当这个条件不满足的时候，这个近似就不够准确了。虽然如此，在一般情况下，VSSM都可以得到很好的结果（图22）</p>
 <img style="float: center;" src="/2022/11/29/ShadowAlgorithms/VSSM.jpg" width="500">
 
-<p>​图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps">GPUGems3 - Chapter 8</a></p>
-<center>图22、VSSM算法得到的软阴影</center>
+<center>图22、VSSM算法得到的软阴影(​图源: <a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps">GPUGems3 - Chapter 8</a>)</center>
 
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文的内容框架来自于一个非常棒的实时渲染在线课程 <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1YK4y1T7yY?from=search&seid=11430567094229083133">Games 202</a> 的第三讲及第四讲，十分推荐。<br>文章中用到的参考链接及参考文献已被列在了文章末尾。</p>
 <p><strong>参考链接</strong></p>
@@ -1545,6 +1536,7 @@
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
+          
         <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
