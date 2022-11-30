@@ -151,6 +151,242 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2022/11/30/ApexCommunication/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wizlyk">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wizlyk">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/11/30/ApexCommunication/" class="post-title-link" itemprop="url">亿点小细节：Apex的标记系统</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-11-30 21:59:00 / 修改时间：22:13:36" itemprop="dateCreated datePublished" datetime="2022-11-30T21:59:00+08:00">2022-11-30</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Apex-交互"><a href="#Apex-交互" class="headerlink" title="Apex 交互"></a>Apex 交互</h1><p>在众多的FPS游戏中，《Apex Legend》（Respawn Entertainment 研发的一款战术竞技游戏，以下简称《Apex》）的局内交流系统可谓是独树一帜了：不仅仅在战斗中有着丰富的标记、角色语音，还可以在背包界面给予队友信息；同时，不同的角色还有独特的交流表现。多种交流形式，它们之间是怎么配合的？在高速战斗的场景下，《Apex》是如何做到流畅的局内交流体验的？本文将通过对专利文献 《Contextually Aware Communications System in Video Games》 的解读，结合笔者在《Apex》客户端中的体验来尝试描述《Apex》中的信息交流系统。</p>
+<h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><p>《Contextually Aware Communications System in Video Games》 中描述了设计这一套交流系统的目的——在多人电子游戏中，信息的交流往往分为以下几种：打字、语音沟通、按特殊的信息按键、通过交互菜单（如交互轮盘）等。这些方式往往有着很多局限，比如打字的方式不适合快节奏的游戏，语音沟通受限于设备等外部因素，按键受限于按键数量，轮盘的操作复杂且受限于可表示的信息条目等。<br>为了解决这些问题，《Apex》运用了一套“智能标记（smart ping）”系统。这套系统的核心为用户通过<strong>单一的按键</strong>，为用户给出<strong>符合当前场景的交互信息</strong>。<br>下面将详细介绍在《Apex》中标记在游戏进行过程中的表现。</p>
+<h2 id="手段"><a href="#手段" class="headerlink" title="手段"></a>手段</h2><p>如果实现高速战斗中简单流畅而信息完备的信息交流系统？一表以蔽之：</p>
+<img src="/2022/11/30/ApexCommunication/core_c.png" alt="core_c">
+表1. 《Apex》中的标记行为一览。
+
+<summary> 文献中的英文版本，用以对照 </summary>
+<img src="/2022/11/30/ApexCommunication/core.png" alt="core">
+英文版本的物品容器的距离和NPC距离应该填错了，在翻译的时候笔者自行修改了，可能会出现翻译错误。
+
+<p>从上表可以看出，在《Apex》中：</p>
+<ul>
+<li>不同的对象有着不同的标记表现。</li>
+<li>将标记对象的种类进行了划分，并为每种对象设定了一个优先级；当同时存在多个可能的标记对象时，会选择优先级高（数字小）的对象进行标记。</li>
+<li>标记对象后，系统给出的交流信息包括视觉标记、角色语音提示以及对话文本提示，具体内容随标记对象改变。</li>
+<li>每种标记都有一个“阈值距离”，用于判断标记操作的有效性。</li>
+</ul>
+<h3 id="标记表现"><a href="#标记表现" class="headerlink" title="标记表现"></a>标记表现</h3><h4 id="行为指示器"><a href="#行为指示器" class="headerlink" title="行为指示器"></a>行为指示器</h4><p>在上面的表格中，优先级2的“敌人行为指示器”基本是角色“寻血猎犬”独有的，该角色的特性是可以追踪敌人近期的行为，如滑铲、跳跃、倒地等等，这些行为都可能在地上留下只有寻血猎犬能看见的印记。同时，这些标记还是随时间变化的（Example Time Variant Markers）。</p>
+<h4 id="视觉标记"><a href="#视觉标记" class="headerlink" title="视觉标记"></a>视觉标记</h4><p>优先级3的“视觉标记”，是指队友给出的标记——当队友在自己的客户端进行了标记后，该标记会通过服务器同步给其他所有队友。对于队友给出的视觉标记，玩家可以通过标记按键来进行确认，告知队友自己已经获得了这个信息。</p>
+<summary>跳伞指挥的位置标记的交互。</summary>
+<img src="/2022/11/30/ApexCommunication/position_1.png" alt="position_1" style="display: inline;height:170px;">
+<img src="/2022/11/30/ApexCommunication/position_2.png" alt="position_2" style="display: inline;height:170px;">
+<img src="/2022/11/30/ApexCommunication/position_3.png" alt="position_3" style="display: inline;height:170px;">
+
+<p>左图：屏幕中心没有对准队友的标记；中图：屏幕中心对准标记；右图：对标记点击标记按键之后，标记样式调整，按键交互提示消失</p>
+<p>如果是玩家自己的标记，可以在标记后再次对准该标记，将会出现取消标记的提示。</p>
+<summary>取消标记的提示</summary>
+<img src="/2022/11/30/ApexCommunication/position_cancel.png" alt="position_cancel" style="float: center;height:270px;">
+
+<h4 id="位置标记"><a href="#位置标记" class="headerlink" title="位置标记"></a>位置标记</h4><p>优先级6的对象在表中有地形、使用技能的提示等，都是用于标识位置。在实际的游玩中，还有更多的位置类型标记，可以大致分为三类：</p>
+<ul>
+<li><p>一般位置标记<br>当玩家对准一个没有敌人或物体的场景使用标记按键，会在相机射线碰撞的地形位置产生一个位置标记，这是游戏中使用频率最高的标记。另外，在对准一个有效位置长按交互键后，会出现一个交互轮盘(mouse wheel)，上面的黄色标记类型都和地形标记的交互表现完全一致，但在图标、角色语音和文本上的表现有差别。</p>
+  <summary>鼠标轮盘中的标记类型</summary>
+  <img src="/2022/11/30/ApexCommunication/mouse_wheel.png" alt="mouse_wheel" style="display: inline;height:600px;">
+</li>
+<li><p>敌人位置标记<br>在上图的鼠标轮盘上，还有两个红色的标记，它们的交互方式和一般位置标记完全一致，但使用了红色来进行了强调。</p>
+</li>
+<li><p>技能标记<br>除了对位置、敌人进行标记外，还可以对技能创造出来的物品进行标记，如动力小子的跳板、侵蚀的毒气陷阱、地平线的重力电梯等等。释放即标记：罗芭的大招。有趣的是，地平线的绝招释放出来的“黑洞”，被标记后显示的表示敌人的红色icon。<br>技能相关的标记，会随着技能的结束而消失。</p>
+</li>
+</ul>
+<p>所有的位置标记，对于标记者，都会在出现的那一瞬间显示出标记与标记者之间的距离，这是由于玩家往往有着利用标记获取距离信息的需求。</p>
+<summary>瞬间的距离信息</summary>
+<img src="/2022/11/30/ApexCommunication/distance_for_now.png" alt="distance_for_now" style="display: inline;height:270px;">
+
+<p>上述的所有标记都独占一种标记类型，同种标记的最多存在数量为一。</p>
+<h4 id="物品标记"><a href="#物品标记" class="headerlink" title="物品标记"></a>物品标记</h4><p>当对准物品时，可以进行标记。标记之后，再次对准出现的标记图标，可以对该标记进行取消操作；取消后，队友处的该标记也将消失，同时伴随语音和文本提示。</p>
+<img src="/2022/11/30/ApexCommunication/item_mark.png" alt="item_mark" style="display: inline;height:250px;">
+<img src="/2022/11/30/ApexCommunication/item_cancel.png" alt="item_cancel" style="display: inline;height:250px;">
+
+<p>最多共存的物品标记数为3。如果玩家进行第四个标记，标记会以先进先出（first-in-first-out）的形式进行更换。</p>
+<h4 id="标记的距离不变性"><a href="#标记的距离不变性" class="headerlink" title="标记的距离不变性"></a>标记的距离不变性</h4><p>绝大部分标记，虽然是出现在三维的游戏空间中，但其图标的大小并不会随着玩家距离的远近而改变。</p>
+<h4 id="交互有限的特殊标记"><a href="#交互有限的特殊标记" class="headerlink" title="交互有限的特殊标记"></a>交互有限的特殊标记</h4><p>绝大部分的标记都是在出现后可以进行交互的，但也有些特殊的标记，不能交互或只能进行有限的交互，如会随着玩家的其他操作如技能释放而出现的直布罗陀的防护盾，以及恶灵的传送门等。</p>
+<summary>随技能出现的标记</summary>
+<img src="/2022/11/30/ApexCommunication/shield.png" alt="shield" style="display: inline;height:350px;"><img src="/2022/11/30/ApexCommunication/portal.png" alt="portal" style="display: inline;height:350px;">
+
+<br>
+
+<p>其中，直布罗陀的防护罩标记不能标记。恶灵的传送门的标记有一些特殊性：1、可以同时存在两个；2、可以对传送门给出警示（Ping），对应会出现文本和语音提示，但不能取消标记；3、在鼠标靠近的时候标记会消失，而不是像其他标记一样变成一个点状图标。</p>
+<h4 id="标记提示的文本标注"><a href="#标记提示的文本标注" class="headerlink" title="标记提示的文本标注"></a>标记提示的文本标注</h4><p>在上面的描述中我们也可以看到，为了给出足够的信息，在标记提示的旁边往往会有短短的一行文字。</p>
+<summary>文本标注的例子</summary>
+<img src="/2022/11/30/ApexCommunication/text_line_1.png" alt="shield" style="display: inline;height:200px;">
+<img src="/2022/11/30/ApexCommunication/text_line_2.png" alt="portal" style="display: inline;height:200px;">
+
+<br>
+
+<p>文本标注有一些特性：</p>
+<ul>
+<li><p>所有的文本标注，都用引导线（lead line）加上文本的形式</p>
+</li>
+<li><p>一旦一个文本标注出现后，引导线的起点位置和屏幕中标注的位置一致；引导线的终点位置不会变，这个设计保证了在快速移动视角的过程中，仍然能看清楚文本的内容。</p>
+  <summary>文本标注的位置不变性</summary>
+  <img src="/2022/11/30/ApexCommunication/text_line_11.png" alt="shield" style="display: inline;height:600px;">
+  <img src="/2022/11/30/ApexCommunication/text_line_12.png" alt="portal" style="display: inline;height:600px;">
+  <img src="/2022/11/30/ApexCommunication/text_line_13.png" alt="portal" style="display: inline;height:600px;"></li>
+</ul>
+<h4 id="标记的消失条件"><a href="#标记的消失条件" class="headerlink" title="标记的消失条件"></a>标记的消失条件</h4><p>由于标记具有一定的时效性，也为了保证信息不会过于繁杂。标记不会一直存在。在《Apex》中，标记有4种消失条件：</p>
+<ul>
+<li>标记寿命(Time lifespan)：一个标记，在所有的队友中都共享同一个寿命；但该标记寿命可以被玩家的交互所延长，比如当一名玩家对队友标记的物品进行确认后（会给出类似于“我想要这件物品”的语音、文本提示），该标记在这名玩家的寿命就将被延长。</li>
+<li>玩家取消标记：玩家可以取消自己的标记来让标记消失。</li>
+<li>对象消失：对于物品的标记，当物品不再实际存在时，其对应的标记也会消失。</li>
+<li>同类型的标记达到了上限，如上述位置标记只能同时存在一个、物品标记只能同时存在3个。</li>
+</ul>
+<h3 id="小结：交互的标记，和标记的交互"><a href="#小结：交互的标记，和标记的交互" class="headerlink" title="小结：交互的标记，和标记的交互"></a>小结：交互的标记，和标记的交互</h3><p>从上面的讨论可以看出，智能标记系统其实分为两部分：一、当玩家按下标记按键后，确定要标记的对象；二、当标记出现后，确定标记本身是否需要变成一个可交互的对象（unit to be communicated about），以及交互后的结果（如取消标记）。下面将介绍对象优先级和阈值距离，正是它们共同决定了第一点。</p>
+<h2 id="标记的优先级"><a href="#标记的优先级" class="headerlink" title="标记的优先级"></a>标记的优先级</h2><p>表1中对一些对象的优先级进行了划分。当有多个对象都可以被交互时，优先级高（层级数字小）的对象将被选作交互的对象。</p>
+<summary>标记优先级的一个例子</summary>
+<img src="/2022/11/30/ApexCommunication/example_of_priority.png" alt="example_of_priority" style="display: inline;height:600px;">
+
+<p>屏幕中心附近同时存在敌人和传送门。即使屏幕中显示的内容为“警示传送门”，按下标记按键之后，由于敌人的优先级是最高的，出现的标记（红框）是表示敌人的标记。</p>
+<h2 id="标记的距离阈值"><a href="#标记的距离阈值" class="headerlink" title="标记的距离阈值"></a>标记的距离阈值</h2><p>在不同的距离下，标记所携带的信息将不一样；为此，《Apex》使用了距离阈值来实现不同距离下的标记以及交互表现。同时距离又分为屏幕距离和三维空间距离。</p>
+<h3 id="屏幕距离"><a href="#屏幕距离" class="headerlink" title="屏幕距离"></a>屏幕距离</h3><p>以位置标记为例，当一个图标位于屏幕中的不同位置时，将会有不同的表现。</p>
+<ul>
+<li>在屏幕的中心区域：显示的是一个较小的方形图标，和一个用于标识位置的细长标识线；</li>
+<li>中心区域外层：细长标识线消失，图标变大，出现强调的动效，和距离文本；</li>
+<li>在屏幕的边缘：出现超出边界的标识。</li>
+</ul>
+<summary>同时存在多个位置标记的例子</summary>
+<img src="/2022/11/30/ApexCommunication/multiple_location.png" alt="multiple_location">
+
+<p>上图中含有侵蚀的毒气陷阱、机器人的缆绳。从左到右，icon_1为地形位置标记，icon_2为侵蚀的毒气陷阱的位置标记，icon_3为缆绳的位置标记。其中icon_1在中心区域外层，icon_2在屏幕中心区域，icon_3在屏幕边缘。</p>
+<img src="/2022/11/30/ApexCommunication/multiple_location_ranges.png" alt="multiple_location_ranges">
+上图大致描述了这三个区域的大致范围。红色区域为中心区域，在这个区域的标记在非可交互状态下，都会变成缩小的形态（diminishing icon）；在中心区域以外的蓝色和灰色区域，标记会变得更显眼，含有这更多的信息（如距离）；在边界的灰色区域，意味这标记对应的位置不在屏幕范围内，出现屏幕方向标识。
+
+<h3 id="三维空间距离"><a href="#三维空间距离" class="headerlink" title="三维空间距离"></a>三维空间距离</h3><p>随着玩家和物品之间的空间距离的变化，玩家屏幕中心对准的物品的交互表现也会随之变化，具体如下。</p>
+<p>在未标记物品时：</p>
+<ul>
+<li>当玩家和物品之间的距离小于等于“拾取距离”时，将在物品的一个固定挂点上出现物品详情；</li>
+<li>当玩家和物品之间的距离大于“拾取距离”，但在“标记距离”以内，标记提示将以图标加上文本标注的形式出现，并且图标会随着距离变远而略微变小；</li>
+<li>在“标记距离”以外，标记提示消失。</li>
+</ul>
+<summary>三维空间距离示例——未标记的情况</summary>
+<img src="/2022/11/30/ApexCommunication/item_1.png" alt="shield" style="display: inline;height:300px;">
+<img src="/2022/11/30/ApexCommunication/item_2.png" alt="portal" style="display: inline;height:300px;">
+<img src="/2022/11/30/ApexCommunication/item_3.png" alt="portal" style="display: inline;height:300px;">
+<img src="/2022/11/30/ApexCommunication/item_4.png" alt="portal" style="display: inline;height:300px;">
+
+<p>在标记了物品时：</p>
+<ul>
+<li>当玩家和物品之间的距离小于等于“拾取距离”时，将在物品的一个固定挂点上出现物品详情；</li>
+<li>当玩家和物品之间的距离大于“拾取距离”时，出现图标和取消标记的文本提示，并且图标大小不会随着距离改变。</li>
+</ul>
+<summary>三维空间距离示例——标记后的情况</summary>
+<img src="/2022/11/30/ApexCommunication/item_m_1.png" alt="shield" style="display: inline;height:200px;"><img src="/2022/11/30/ApexCommunication/item_m_2.png" alt="portal" style="display: inline;height:200px;"><img src="/2022/11/30/ApexCommunication/item_m_3.png" alt="portal" style="display: inline;height:200px;"><img src="/2022/11/30/ApexCommunication/item_m_4.png" alt="portal" style="display: inline;height:200px;">
+
+<h3 id="三维距离可能的实现细节"><a href="#三维距离可能的实现细节" class="headerlink" title="三维距离可能的实现细节"></a>三维距离可能的实现细节</h3><p>除了用于控制单一物品的交互表现外，三维空间的距离还会用来判断多个对象都可交互（且在同一优先级）时，实际交互的是哪个对象。这样的话，不同的计算三维距离的方法，将可能出现不同的交互结果。</p>
+<p>在《Contextually Aware Communications System in Video Games》中，描述了一些实现方法，如从屏幕中心或枪口发射射线，碰撞到物理上，根据距离碰撞点的距离来作为交互判断的距离。但在实际游玩中的体验并不是这样。笔者在实际游玩中猜测的实现细节如下：</p>
+<ul>
+<li>每个对象都有一个包围盒，包围盒的形状大小会和对象的模型匹配；</li>
+<li>包围盒有一个定义的中心点；</li>
+<li>玩家可以和对象交互的前提是，对象在其交互（拾取）距离以内，且由屏幕中心发出的射线，和对象的包围盒相交；</li>
+<li>当存在多个对象可交互（拾取）时，包围盒中心点<strong>离屏幕中心发出的射线最近</strong>的那个对象将被选中为交互对象。</li>
+</ul>
+<summary>对于距离计算方式的印证</summary>
+<img src="/2022/11/30/ApexCommunication/guess_1.png" alt="guess_1" style="display: inline;height:500px;">
+<img src="/2022/11/30/ApexCommunication/guess_2.png" alt="guess_2" style="display: inline;height:500px;">
+<img src="/2022/11/30/ApexCommunication/guess_3.png" alt="guess_3" style="display: inline;height:500px;">
+
+<p>左图：在玩家面前存在注射器和电池两种物品；中图：当屏幕中心对准（电池背后）的注射器的“中心”时，可以透过电池拾取到注射器；右图：稍微改变屏幕中心位置，拾取的对象改变为电池。</p>
+<p>在同学给出了起源引擎开源Source SDK中相关的<a target="_blank" rel="noopener" href="https://github.com/ValveSoftware/source-sdk-2013/blob/master/mp/src/game/shared/baseplayer_shared.cpp">代码位置</a>，在这里非常感谢。开源SDK的最近更新时间是2015年，被用于了《泰坦陨落》和《半条命2》等作品中，不过《Apex》是2019年发布的游戏，交互逻辑也有差别，具体的实现细节应该有所更改。这里将开源的 FindUseEntity 的逻辑简单概括一下（函数FindUseEntity的返回值即为找到的可交互对象）。</p>
+<ul>
+<li>先往相机朝向方向（即鼠标指针对应方向）发射一条射线，如果在一定距离内碰撞到了可交互的物体，那么直接返回该物体。（注：上述护盾电池的例子在这一步就应该结束了）</li>
+<li>如果第一步没有找到物体，那么估计出一个最近可交互物体的距离上限，具体做法是：<ul>
+<li>在从下（屏幕中心往下45°）往上（到屏幕中心往上15°）的七个方向上，依次使用矩形碰撞（TraceHull）来获取各个方向碰撞到的第一个物体，如果该物体符合交互条件，那么将该物体记录为 pNearest；（注意，这里后计算的方向的物体将会直接覆盖掉原来的 pNearest，而不管实际的距离）</li>
+<li>如果脚下有物体，那么将 pNearest 设置为脚下的物体；</li>
+<li>根据 pNearest 来估计可交互物体的距离上限，至此距离估计完成，设置最小距离为 nearestDist。</li>
+</ul>
+</li>
+<li>遍历玩家可交互距离内的所有物体，对每个物体都做如下操作：<ul>
+<li>确认可交互性；</li>
+<li>如果物体离视野中心太远（相机到物体最近点的连线与相机朝向之间的夹角太大），则判断为不可交互；</li>
+<li>如果物体到相机的距离大于 nearestDist，则判断为不可交互；</li>
+<li>判断物体是否被玻璃等物体遮挡，如果遮挡了，则判断为不可交互；否则，记录物体为 pNearest，同时更新 nearestDist。</li>
+</ul>
+</li>
+<li>返回 pNearest。</li>
+</ul>
+<p>在函数 FindUseEntity 中还有一些 NPC 独有的逻辑以及 Debug 的绘制逻辑，在上面并未体现。</p>
+<h2 id="菜单上的标记（Pinging-in-a-Menu）"><a href="#菜单上的标记（Pinging-in-a-Menu）" class="headerlink" title="菜单上的标记（Pinging in a Menu）"></a>菜单上的标记（Pinging in a Menu）</h2><p>可以在菜单上进行标记是《Apex》标记系统的特色，这有部分原因应该来自于《Apex》战斗中所需要的背包管理以及游戏中丰富的装备系统。在背包中，可以进行的标记有对象：子弹、头盔、护甲、击倒护盾、背包、生存道具，以及绝招的充能状态。标记后，会向队友给出当前自己含有的对应物品（或绝招）的信息。</p>
+<summary>在背包菜单中标记的图例</summary>
+<img src="/2022/11/30/ApexCommunication/ping_in_menu.png" alt="ping_in_menu">
+
+<h2 id="一些不能让你上分的小细节"><a href="#一些不能让你上分的小细节" class="headerlink" title="一些不能让你上分的小细节"></a>一些不能让你上分的小细节</h2><ul>
+<li>当连续在地形上标记有敌人时，角色的警示语音语气比较平缓，语音播放的间隔也比较长；而当玩家直接对着敌人的模型进行标记时，角色的警示语音会更急促，语音播放的间隔也比较短。同时，语音的内容也会随敌人的距离远近变化。</li>
+<li>用鼠标（默认的）滚轮标记敌人和按F标记敌人并不等价——滚轮标记会标记到实际的敌人模型上，而按F会标记到模型背后的地形上。</li>
+<li>罗芭（角色特性为可以穿墙看见高等级物品）可以穿墙标记，可标记距离和非穿墙的情况一致。</li>
+<li>滑索的物理不会挡住标记射线，也就是说可以透过滑索标记远处的位置。</li>
+<li>可以同时标记滑索和敌人，但不能同时标记滑索和物体。</li>
+</ul>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>《Apex》的智能标记系统保证了萌新和老玩家都能利用标记来进行简单有效的信息交流。它的设计很简洁，以至于让人很难注意到这个系统；同时它的设计又很丰富，保证了在多变的场景下都能给出合适的信息，这正是专利中所谓“上下文相关交流（Contextually aware communications）”所希望达到的效果。希望《Apex》这他山之石可以帮助我们设计出优秀的标记系统。</p>
+<p>以下尝试从《Apex》中概括一些规则：</p>
+<ul>
+<li>所有玩家创造出的地图标记，一定是可被交互的，且与标记交互的是可以被感知的；</li>
+<li>所有标记，一定有着合适的生命周期；</li>
+<li>标记的交互不能影响到游戏的核心体验；</li>
+<li>标记所传递的信息必须足够简洁；</li>
+<li>标记可以有多种表现形态来体现更丰富的信息。</li>
+</ul>
+<p>大部分标记测试场景都为单人训练场，可能和多人的情况有所差别。<br>受限于时间和拥有的角色数量，部分角色的技能并没有在文中出现。</p>
+<h2 id="文献"><a href="#文献" class="headerlink" title="文献"></a>文献</h2><p>Alderman K T, Glenn J P, McLeod B T, et al. Contextually aware communications system in video games: U.S. Patent 11,097,189[P]. 2021-8-24.<br>（地址为：<a target="_blank" rel="noopener" href="https://patentimages.storage.googleapis.com/1a/8a/6b/7d67aa6a69a693/US11097189.pdf">https://patentimages.storage.googleapis.com/1a/8a/6b/7d67aa6a69a693/US11097189.pdf</a>）</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2022/11/29/ShadowAlgorithms/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -182,7 +418,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-11-30 21:54:35" itemprop="dateModified" datetime="2022-11-30T21:54:35+08:00">2022-11-30</time>
+                <time title="修改时间：2022-11-30 22:05:42" itemprop="dateModified" datetime="2022-11-30T22:05:42+08:00">2022-11-30</time>
               </span>
 
           
@@ -1530,14 +1766,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
