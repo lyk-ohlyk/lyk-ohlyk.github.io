@@ -17,18 +17,18 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="本文所有内容参考于 《Effective Modern C++》（Scott Meyers）一书，仅供个人学习 autoItem 5:多用auto替换显式类型声明auto有很多好处： 可以避免未定义的情况：123int x1; &#x2F;&#x2F; potentially uninitializedauto x2; &#x2F;&#x2F; error! initializer requiredauto x3 &#x3D; 0; &#x2F;&#x2F; fin">
+  <meta name="description" content="Item 5: 多用auto替换显式类型声明 Item 6: 用显示类型声明来避免 auto 的不合适推断">
 <meta property="og:type" content="article">
 <meta property="og:title" content="auto - Effective Modern C++阅读笔记（二）">
 <meta property="og:url" content="http://yoursite.com/2019/08/11/EMC-notes-2/index.html">
 <meta property="og:site_name" content="wizlyk">
-<meta property="og:description" content="本文所有内容参考于 《Effective Modern C++》（Scott Meyers）一书，仅供个人学习 autoItem 5:多用auto替换显式类型声明auto有很多好处： 可以避免未定义的情况：123int x1; &#x2F;&#x2F; potentially uninitializedauto x2; &#x2F;&#x2F; error! initializer requiredauto x3 &#x3D; 0; &#x2F;&#x2F; fin">
+<meta property="og:description" content="Item 5: 多用auto替换显式类型声明 Item 6: 用显示类型声明来避免 auto 的不合适推断">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2019-08-11T01:45:23.000Z">
-<meta property="article:modified_time" content="2022-11-29T12:38:11.766Z">
+<meta property="article:modified_time" content="2022-11-30T16:10:46.713Z">
 <meta property="article:author" content="wizlyk">
 <meta property="article:tag" content="Effective Modern C++">
 <meta property="article:tag" content="C++">
@@ -78,7 +78,11 @@
   </style>
 </noscript>
 
-</head>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
   <div class="container use-motion">
@@ -188,7 +192,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-11-29 20:38:11" itemprop="dateModified" datetime="2022-11-29T20:38:11+08:00">2022-11-29</time>
+                <time title="修改时间：2022-12-01 00:10:46" itemprop="dateModified" datetime="2022-12-01T00:10:46+08:00">2022-12-01</time>
               </span>
 
           
@@ -202,46 +206,86 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><code>本文所有内容参考于 《Effective Modern C++》（Scott Meyers）一书，仅供个人学习</code></p>
-<h1 id="auto"><a href="#auto" class="headerlink" title="auto"></a>auto</h1><h2 id="Item-5-多用auto替换显式类型声明"><a href="#Item-5-多用auto替换显式类型声明" class="headerlink" title="Item 5:多用auto替换显式类型声明"></a>Item 5:多用auto替换显式类型声明</h2><p>auto有很多好处：</p>
-<h3 id="可以避免未定义的情况："><a href="#可以避免未定义的情况：" class="headerlink" title="可以避免未定义的情况："></a>可以避免未定义的情况：</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> x1; <span class="comment">// potentially uninitialized</span></span><br><span class="line"><span class="keyword">auto</span> x2; <span class="comment">// error! initializer required</span></span><br><span class="line"><span class="keyword">auto</span> x3 = <span class="number">0</span>; <span class="comment">// fine, x&#x27;s value is well-defined</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="可以避免繁琐的类型声明，且可以随参数改变："><a href="#可以避免繁琐的类型声明，且可以随参数改变：" class="headerlink" title="可以避免繁琐的类型声明，且可以随参数改变："></a>可以避免繁琐的类型声明，且可以随参数改变：</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> It&gt; <span class="comment">// 设It是一个迭代器类型</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">dwim</span><span class="params">(It b, It e)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (b != e) &#123;</span><br><span class="line">    <span class="keyword">auto</span> currValue = *b;</span><br><span class="line">    …</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+        <p>Item 5: 多用auto替换显式类型声明<br>
+Item 6: 用显示类型声明来避免 auto 的不合适推断<br>
+<span id="more"></span></p>
+<p><code>本文所有内容参考于 《Effective Modern C++》（Scott Meyers）一书，仅供个人学习</code></p>
+<h1 id="auto">auto</h1>
+<h2 id="item-5多用auto替换显式类型声明">Item
+5:多用auto替换显式类型声明</h2>
+<p>auto有很多好处：</p>
+<h3 id="可以避免未定义的情况">可以避免未定义的情况：</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> x1; <span class="comment">// potentially uninitialized</span></span><br><span class="line"><span class="keyword">auto</span> x2; <span class="comment">// error! initializer required</span></span><br><span class="line"><span class="keyword">auto</span> x3 = <span class="number">0</span>; <span class="comment">// fine, x&#x27;s value is well-defined</span></span><br></pre></td></tr></table></figure>
+<h3 id="可以避免繁琐的类型声明且可以随参数改变">可以避免繁琐的类型声明，且可以随参数改变：</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> It&gt; <span class="comment">// 设It是一个迭代器类型</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">dwim</span><span class="params">(It b, It e)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (b != e) &#123;</span><br><span class="line">    <span class="keyword">auto</span> currValue = *b;</span><br><span class="line">    …</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在C++14中，还可以在lambda表达式中使用<strong>auto</strong>：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> derefUPLess =                      <span class="comment">// comparison func.</span></span><br><span class="line">  [](<span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp; p1, <span class="comment">// for Widgets</span></span><br><span class="line">  <span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp; p2)    <span class="comment">// pointed to by</span></span><br><span class="line">&#123; <span class="keyword">return</span> *p1 &lt; *p2; &#125;;                  <span class="comment">// std::unique_ptrs</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> derefLess =       <span class="comment">// C++14 comparison</span></span><br><span class="line">  [](<span class="type">const</span> <span class="keyword">auto</span>&amp; p1,   <span class="comment">// function for</span></span><br><span class="line">  <span class="type">const</span> <span class="keyword">auto</span>&amp; p2)      <span class="comment">// values pointed</span></span><br><span class="line">&#123; <span class="keyword">return</span> *p1 &lt; *p2; &#125;; <span class="comment">// to by anything pointer-like</span></span><br></pre></td></tr></table></figure>
-
-<p>书中提到了std::function 对象：在C++11标准库中，std::function 是一个产生类似于函数指针的模板。与函数指针不同的是，函数指针只能指向函数，而std::function 可以指向所有的可调用对象。如：</p>
+<p>书中提到了std::function 对象：在C++11标准库中，std::function
+是一个产生类似于函数指针的模板。与函数指针不同的是，函数指针只能指向函数，而std::function
+可以指向所有的可调用对象。如：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">std::function&lt;<span class="type">bool</span>(<span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp;,</span><br><span class="line">                   <span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp;)&gt; func;</span><br><span class="line"></span><br><span class="line">std::function&lt;<span class="type">bool</span>(<span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp;,</span><br><span class="line">                   <span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp;)&gt;</span><br><span class="line">derefUPLess = [](<span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp; p1,</span><br><span class="line">                 <span class="type">const</span> std::unique_ptr&lt;Widget&gt;&amp; p2)</span><br><span class="line">&#123; <span class="keyword">return</span> *p1 &lt; *p2; &#125;;</span><br></pre></td></tr></table></figure>
-
-<p>由于 std::function 是一个模板，所以它会比 auto 使用更多的空间。  </p>
-<h3 id="auto-可以避免不合适的类型声明"><a href="#auto-可以避免不合适的类型声明" class="headerlink" title="auto 可以避免不合适的类型声明"></a>auto 可以避免不合适的类型声明</h3><p>比如下面的代码：</p>
+<p>由于 std::function 是一个模板，所以它会比 auto 使用更多的空间。</p>
+<h3 id="auto-可以避免不合适的类型声明">auto
+可以避免不合适的类型声明</h3>
+<p>比如下面的代码：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;<span class="type">int</span>&gt; v;</span><br><span class="line">…</span><br><span class="line"><span class="type">unsigned</span> sz = v.<span class="built_in">size</span>();</span><br></pre></td></tr></table></figure>
-
-<p>一般情况下这没有问题，然而 <strong>unsigned</strong> 和 <strong>std::vector&lt;int&gt;::size_type</strong> 并不完全一致。  </p>
-<p>在32位的Windows系统中，两者一致；在64位的 Windows 系统中，<strong>unsigned</strong> 是32位的，而 <strong>std::vector&lt;int&gt;::size_type</strong> 是64位的,从而可能导致错误。  </p>
+<p>一般情况下这没有问题，然而 <strong>unsigned</strong> 和
+<strong>std::vector&lt;int&gt;::size_type</strong> 并不完全一致。</p>
+<p>在32位的Windows系统中，两者一致；在64位的 Windows
+系统中，<strong>unsigned</strong> 是32位的，而
+<strong>std::vector&lt;int&gt;::size_type</strong>
+是64位的,从而可能导致错误。</p>
 <p>再看下面的例子：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">std::unordered_map&lt;std::string, <span class="type">int</span>&gt; m;</span><br><span class="line">…</span><br><span class="line"><span class="keyword">for</span> (<span class="type">const</span> std::pair&lt;std::string, <span class="type">int</span>&gt;&amp; p : m)</span><br><span class="line">&#123;</span><br><span class="line">… <span class="comment">// do something with p</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>是不是一眼看上去并没有错误？然而在 std::unordered_map 中的 key 是 <strong>const</strong> 类型的，也就是说 pair 应该为 **std::pair&lt;const std::string, int&gt;**。使用 auto 就能避免这种错误的类型声明。  </p>
+<p>是不是一眼看上去并没有错误？然而在 std::unordered_map 中的 key 是
+<strong>const</strong> 类型的，也就是说 pair 应该为
+<strong>std::pair&lt;const std::string, int&gt;</strong>。使用 auto
+就能避免这种错误的类型声明。</p>
 <p><strong>Things to Remember</strong></p>
 <ul>
-<li>auto variables must be initialized, are generally immune to type mismatches that can lead to portability or efficiency problems, can ease the process of refactoring, and typically require less typing than variables with explicitly specified types.</li>
-<li>auto-typed variables are subject to the pitfalls described in Items 2 and 6.</li>
+<li>auto variables must be initialized, are generally immune to type
+mismatches that can lead to portability or efficiency problems, can ease
+the process of refactoring, and typically require less typing than
+variables with explicitly specified types.</li>
+<li>auto-typed variables are subject to the pitfalls described in Items
+2 and 6.</li>
 </ul>
-<h2 id="Item-6-用显示类型声明来避免-auto-的不合适推断"><a href="#Item-6-用显示类型声明来避免-auto-的不合适推断" class="headerlink" title="Item 6:用显示类型声明来避免 auto 的不合适推断"></a>Item 6:用显示类型声明来避免 auto 的不合适推断</h2><p>有意思的是，瞎用auto也会导致错误，<strong>std::vector&lt;bool&gt;</strong> 就是一个典型的例子：</p>
+<h2 id="item-6用显示类型声明来避免-auto-的不合适推断">Item
+6:用显示类型声明来避免 auto 的不合适推断</h2>
+<p>有意思的是，瞎用auto也会导致错误，<strong>std::vector&lt;bool&gt;</strong>
+就是一个典型的例子：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::vector&lt;<span class="type">bool</span>&gt; <span class="title">features</span><span class="params">(<span class="type">const</span> Widget&amp; w)</span></span>;</span><br><span class="line">Widget w;</span><br><span class="line">…</span><br><span class="line"><span class="type">bool</span> highPriority = <span class="built_in">features</span>(w)[<span class="number">5</span>]; <span class="comment">// is w high priority?</span></span><br><span class="line"><span class="built_in">processWidget</span>(w, highPriority); <span class="comment">// process w in accord with its priority</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> highPriority_auto = <span class="built_in">features</span>(w)[<span class="number">5</span>];</span><br><span class="line"><span class="built_in">processWidget</span>(w, highPriority_auto); <span class="comment">// undefined behavior!</span></span><br></pre></td></tr></table></figure>
-
-<p>一般来说，std::vector::operator[] 会返回相应的引用类型，唯独除了 bool 。这是由于C++在实现 vector&lt;bool&gt; 时是根据二进制数某位上的值来得到各个value的，而C++禁止对位的引用，所以 operator[] 会返回 std::vector&lt;bool&gt;::reference 作为替代，它使用起来就和 bool&amp; 类似。然而，在上面的代码中，我们想要的是<strong>bool</strong>类型而不是 reference ，所以这里应该使用显式的 bool 类型声明。</p>
-<p>更进一步的，仔细看上面这段代码，feature(w) 产生了一个临时变量，而 feature(w)[5] 是对这个临时变量的 vector&lt;bool&gt;::reference 。因此，highPriority_auto 实际包含了对这个临时变量的元素的指针，这导致在下一句中， highPriority_auto 包含了一个空指针，从而导致严重错误。</p>
-<p><strong>Proxy Class</strong><br>Proxy class: a class that exists for the purpose of emulating and augmenting the behavior of some other type.<br>Proxy 类的目的模仿或改进某个类型的行为。如 std::vector&lt;bool&gt;::reference 就是一个<strong>proxy class</strong>，用来模仿 vector&lt;bool&gt;的operator[]，让其看起来像是返回了一个bool&amp;。<br>智能指针 std::shared_ptr 和 std::unique_ptr 等也是 Proxy class，为了改进 生指针(Raw pointer) 在资源管理上的行为。<br>说白了，proxy class 的作用就是产生一个代理(proxy)，若对含有 proxy class 的代码使用 auto ，很可能会得到 proxy class的类型而不是<strong>看上去</strong>直接的类型。</p>
+<p>一般来说，std::vector::operator[] 会返回相应的引用类型，唯独除了 bool
+。这是由于C++在实现 vector&lt;bool&gt;
+时是根据二进制数某位上的值来得到各个value的，而C++禁止对位的引用，所以
+operator[] 会返回 std::vector&lt;bool&gt;::reference
+作为替代，它使用起来就和 bool&amp;
+类似。然而，在上面的代码中，我们想要的是<strong>bool</strong>类型而不是
+reference ，所以这里应该使用显式的 bool 类型声明。</p>
+<p>更进一步的，仔细看上面这段代码，feature(w) 产生了一个临时变量，而
+feature(w)[5] 是对这个临时变量的 vector&lt;bool&gt;::reference
+。因此，highPriority_auto
+实际包含了对这个临时变量的元素的指针，这导致在下一句中，
+highPriority_auto 包含了一个空指针，从而导致严重错误。</p>
+<p><strong>Proxy Class</strong><br>
+Proxy class: a class that exists for the purpose of emulating and
+augmenting the behavior of some other type. Proxy
+类的目的模仿或改进某个类型的行为。如 std::vector&lt;bool&gt;::reference
+就是一个<strong>proxy class</strong>，用来模仿
+vector&lt;bool&gt;的operator[]，让其看起来像是返回了一个bool&amp;。<br>
+智能指针 std::shared_ptr 和 std::unique_ptr 等也是 Proxy class，为了改进
+生指针(Raw pointer) 在资源管理上的行为。<br>
+说白了，proxy class 的作用就是产生一个代理(proxy)，若对含有 proxy class
+的代码使用 auto ，很可能会得到 proxy
+class的类型而不是<strong>看上去</strong>直接的类型。</p>
 <p>如果非要用 auto 也不是不行：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> highPriority = <span class="built_in">static_cast</span>&lt;<span class="type">bool</span>&gt;(<span class="built_in">features</span>(w)[<span class="number">5</span>]);</span><br></pre></td></tr></table></figure>
-
 <p><strong>Things to Remember</strong></p>
 <ul>
-<li>“Invisible” proxy types can cause auto to deduce the “wrong” type for an initializing expression.</li>
-<li>The explicitly typed initializer idiom forces auto to deduce the type you want it to have.</li>
+<li>“Invisible” proxy types can cause auto to deduce the “wrong” type
+for an initializing expression.</li>
+<li>The explicitly typed initializer idiom forces auto to deduce the
+type you want it to have.</li>
 </ul>
 
     </div>
@@ -328,7 +372,10 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#auto"><span class="nav-number">1.</span> <span class="nav-text">auto</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Item-5-%E5%A4%9A%E7%94%A8auto%E6%9B%BF%E6%8D%A2%E6%98%BE%E5%BC%8F%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E"><span class="nav-number">1.1.</span> <span class="nav-text">Item 5:多用auto替换显式类型声明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E9%81%BF%E5%85%8D%E6%9C%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E6%83%85%E5%86%B5%EF%BC%9A"><span class="nav-number">1.1.1.</span> <span class="nav-text">可以避免未定义的情况：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E9%81%BF%E5%85%8D%E7%B9%81%E7%90%90%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%EF%BC%8C%E4%B8%94%E5%8F%AF%E4%BB%A5%E9%9A%8F%E5%8F%82%E6%95%B0%E6%94%B9%E5%8F%98%EF%BC%9A"><span class="nav-number">1.1.2.</span> <span class="nav-text">可以避免繁琐的类型声明，且可以随参数改变：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#auto-%E5%8F%AF%E4%BB%A5%E9%81%BF%E5%85%8D%E4%B8%8D%E5%90%88%E9%80%82%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E"><span class="nav-number">1.1.3.</span> <span class="nav-text">auto 可以避免不合适的类型声明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Item-6-%E7%94%A8%E6%98%BE%E7%A4%BA%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E6%9D%A5%E9%81%BF%E5%85%8D-auto-%E7%9A%84%E4%B8%8D%E5%90%88%E9%80%82%E6%8E%A8%E6%96%AD"><span class="nav-number">1.2.</span> <span class="nav-text">Item 6:用显示类型声明来避免 auto 的不合适推断</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#auto"><span class="nav-number">1.</span> <span class="nav-text">auto</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#item-5%E5%A4%9A%E7%94%A8auto%E6%9B%BF%E6%8D%A2%E6%98%BE%E5%BC%8F%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E"><span class="nav-number">1.1.</span> <span class="nav-text">Item
+5:多用auto替换显式类型声明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E9%81%BF%E5%85%8D%E6%9C%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">1.1.1.</span> <span class="nav-text">可以避免未定义的情况：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E9%81%BF%E5%85%8D%E7%B9%81%E7%90%90%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%94%E5%8F%AF%E4%BB%A5%E9%9A%8F%E5%8F%82%E6%95%B0%E6%94%B9%E5%8F%98"><span class="nav-number">1.1.2.</span> <span class="nav-text">可以避免繁琐的类型声明，且可以随参数改变：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#auto-%E5%8F%AF%E4%BB%A5%E9%81%BF%E5%85%8D%E4%B8%8D%E5%90%88%E9%80%82%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E"><span class="nav-number">1.1.3.</span> <span class="nav-text">auto
+可以避免不合适的类型声明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#item-6%E7%94%A8%E6%98%BE%E7%A4%BA%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E6%9D%A5%E9%81%BF%E5%85%8D-auto-%E7%9A%84%E4%B8%8D%E5%90%88%E9%80%82%E6%8E%A8%E6%96%AD"><span class="nav-number">1.2.</span> <span class="nav-text">Item
+6:用显示类型声明来避免 auto 的不合适推断</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -433,6 +480,61 @@
 
 
   
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 
