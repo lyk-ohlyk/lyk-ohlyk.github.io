@@ -180,10 +180,10 @@
       <div class="post-body">
           <div class="tag-cloud">
             <div class="tag-cloud-title">
-              目前共计 8 个标签
+              目前共计 6 个标签
             </div>
             <div class="tag-cloud-tags">
-              <a href="/tags/Algorithm/" style="font-size: 18px; color: #8e8e8e">Algorithm</a> <a href="/tags/Algorithms/" style="font-size: 12px; color: #ccc">Algorithms</a> <a href="/tags/Apex/" style="font-size: 12px; color: #ccc">Apex</a> <a href="/tags/C/" style="font-size: 30px; color: #111">C++</a> <a href="/tags/Effective-Modern-C/" style="font-size: 24px; color: #4f4f4f">Effective Modern C++</a> <a href="/tags/Mark-system/" style="font-size: 12px; color: #ccc">Mark system</a> <a href="/tags/Notes/" style="font-size: 12px; color: #ccc">Notes</a> <a href="/tags/Shadow-Algorithm/" style="font-size: 12px; color: #ccc">Shadow Algorithm</a>
+              <a href="/tags/Algorithm/" style="font-size: 12px; color: #ccc">Algorithm</a> <a href="/tags/Algorithms/" style="font-size: 12px; color: #ccc">Algorithms</a> <a href="/tags/C/" style="font-size: 30px; color: #111">C++</a> <a href="/tags/Effective-Modern-C/" style="font-size: 21px; color: #6f6f6f">Effective Modern C++</a> <a href="/tags/Notes/" style="font-size: 12px; color: #ccc">Notes</a> <a href="/tags/Shadow-Algorithm/" style="font-size: 12px; color: #ccc">Shadow Algorithm</a>
             </div>
           </div>
         
@@ -260,14 +260,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -355,59 +355,6 @@
   
 
   
-      
-
-<script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      loader: {
-        source: {
-          '[tex]/amsCd': '[tex]/amscd',
-          '[tex]/AMScd': '[tex]/amscd'
-        }
-      },
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              let target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    (function () {
-      var script = document.createElement('script');
-      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-      script.defer = true;
-      document.head.appendChild(script);
-    })();
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script>
-
-    
 
   
 
